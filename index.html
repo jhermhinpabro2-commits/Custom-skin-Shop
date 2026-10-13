@@ -68,26 +68,54 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 .vcard small{color:var(--muted);font-size:11px}
 .vcard .vdel{position:absolute;top:6px;right:6px;border:0;background:var(--line);color:var(--text);border-radius:6px;font-size:11px;padding:3px 7px;cursor:pointer}
 #vList{display:flex;flex-direction:column;gap:8px}
-/* inbox + chat + logs */
 .wide{max-width:520px}
-.ib{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;cursor:pointer;font:inherit}
-.ib small{color:var(--muted)}
-#ibList{display:flex;flex-direction:column;gap:8px}
-#msgs{display:flex;flex-direction:column;gap:6px;height:50vh;min-height:200px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px}
-.m{max-width:80%;padding:7px 10px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-break:break-word;background:#262626}
-.m.me{align-self:flex-end;background:var(--accent);color:#fff}
-.m small{display:block;font-size:10px;opacity:.7;margin-top:2px}
-.cbar{display:flex;gap:6px}
-.cbar input{flex:1;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;min-width:0}
-.cbar .btn{padding:9px 14px}
 .lg{font-size:12px;padding:7px 0;border-bottom:1px solid var(--line);word-break:break-word}
 .lg b{color:var(--accent)}
 .lg small{display:block;color:var(--muted)}
 .by.click{cursor:pointer;text-decoration:underline}
-.m a{color:inherit;text-decoration:underline;font-weight:700}
 #slAv{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);align-self:center;background:#222}
 .av{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);cursor:pointer;background:#222}
 #pPrev{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);align-self:center;background:#222}
+
+/* ===== Messenger style: inbox / chat logs ===== */
+#ibList,#clList{display:flex;flex-direction:column}
+.cav,.sav{border-radius:50%;object-fit:cover;flex:none;background:#222;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.cav{width:40px;height:40px;font-size:17px}
+.sav{width:28px;height:28px;font-size:12px}
+.ib{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--text);padding:10px 4px;cursor:pointer;font:inherit}
+.ib .cav{width:50px;height:50px;font-size:20px}
+.ib .ctx{flex:1}
+.ib .ctx small{font-size:13px}
+.ib .tm{font-size:11px;color:var(--muted);align-self:flex-start;margin-top:4px;flex:none}
+.ctx{min-width:0;display:flex;flex-direction:column}
+.ctx b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctx small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbox{font:inherit;color:var(--text);background:#1c1c1c;border:0;border-radius:20px;padding:10px 14px;width:100%}
+
+/* ===== Messenger style: chat window ===== */
+.full{padding:0}
+.chatwin{background:var(--card);width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:560px){.full{padding:16px}.chatwin{height:min(100%,720px);border-radius:16px;border:1px solid var(--accent)}}
+.chead{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px 6px;border-bottom:1px solid var(--line);background:#0c0c0c}
+.back{border:0;background:transparent;color:var(--accent);font-size:34px;line-height:1;cursor:pointer;padding:0 8px 4px}
+#cDisc{background:#1a0a0c;border-bottom:1px solid var(--line);padding:6px 12px;font-size:12px;color:var(--muted);word-break:break-all}
+#cDisc a{color:var(--price);font-weight:700}
+#msgs{flex:1;overflow:auto;padding:10px 10px 6px;display:flex;flex-direction:column;background:var(--bg)}
+.row2{display:flex;align-items:flex-end;gap:6px;margin-top:2px}
+.row2.me{justify-content:flex-end}
+.row2.first{margin-top:10px}
+.sp{width:28px;flex:none}
+.b{max-width:75%;padding:8px 13px;border-radius:19px;font-size:15px;white-space:pre-wrap;word-break:break-word;background:#262626}
+.row2.me .b{background:var(--accent);color:#fff}
+.b a{color:inherit;text-decoration:underline;font-weight:700}
+.tsep{align-self:center;color:var(--muted);font-size:11px;margin:12px 0 4px}
+.sname{font-size:11px;color:var(--muted)}
+.cbar{display:flex;align-items:center;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:#0c0c0c}
+.cbar input{flex:1;min-width:0;font:inherit;color:var(--text);background:#1c1c1c;border:0;border-radius:22px;padding:11px 16px}
+.ic{width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--accent);font-size:20px;cursor:pointer;flex:none;padding:0}
+.ic.send{background:var(--accent);color:#fff}
+.ic:disabled{opacity:.5}
+.ro{text-align:center;color:var(--muted);font-size:12px;padding:12px;border-top:1px solid var(--line);background:#0c0c0c}
 @media (max-width:560px){.show{grid-template-columns:1fr}}
 </style>
 </head>
@@ -189,28 +217,42 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </div>
 <input class="vh" id="aFile" type="file" accept="video/*">
 
-<!-- Inbox -->
+<!-- Inbox (MY chats only) -->
 <div class="overlay hide" id="inboxBox">
   <div class="modal wide">
-    <h3 id="ibTitle">💬 Messages</h3>
+    <h3>💬 Messages</h3>
     <div id="ibList"></div>
     <button class="btn ghost" id="ibClose">Close</button>
   </div>
 </div>
 
-<!-- Chat -->
-<div class="overlay hide" id="chatBox">
+<!-- Chat Logs (owner only, ALL chats, view only) -->
+<div class="overlay hide" id="clBox">
   <div class="modal wide">
-    <h3 id="cTitle">Chat</h3>
-    <div class="fn" id="cSub"></div>
+    <h3>🗂 Chat Logs</h3>
+    <input class="sbox" id="clSearch" placeholder="Search buyer / seller / product" autocapitalize="none" autocorrect="off">
+    <div id="clList"></div>
+    <button class="btn ghost" id="clClose">Close</button>
+  </div>
+</div>
+
+<!-- Chat (Messenger style) -->
+<div class="overlay full hide" id="chatBox">
+  <div class="chatwin">
+    <div class="chead">
+      <button class="back" id="cClose" aria-label="Back">‹</button>
+      <span id="cAv" style="display:contents"></span>
+      <div class="ctx"><b id="cTitle">Chat</b><small id="cSub"></small></div>
+    </div>
+    <div id="cDisc" class="hide"></div>
     <div id="msgs"></div>
     <div class="cbar" id="cbar">
-  <button class="btn ghost" id="cAtt" title="Send photo/video">📎</button>
-  <input type="text" id="cInput" maxlength="500" placeholder="Type a message...">
-  <button class="btn" id="cSend">Send</button>
-</div>
-<input class="vh" id="cMedia" type="file" accept="image/*,video/*">
-    <button class="btn ghost" id="cClose">Close</button>
+      <button class="ic" id="cAtt" title="Send photo/video">📎</button>
+      <input type="text" id="cInput" maxlength="500" placeholder="Aa" autocomplete="off">
+      <button class="ic send" id="cSend" aria-label="Send">➤</button>
+    </div>
+    <div class="ro hide" id="cRo">👁 View only (Chat Logs)</div>
+    <input class="vh" id="cMedia" type="file" accept="image/*,video/*">
   </div>
 </div>
 
@@ -243,6 +285,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <img id="pPrev" alt="">
     <label class="pick" for="pFile">📷 Change Picture</label>
     <input class="vh" id="pFile" type="file" accept="image/*">
+    <label class="f">Or paste picture link (optional)<input type="text" id="pUrl" placeholder="https://..." autocapitalize="none" autocorrect="off"></label>
     <div class="fn" id="pUser"></div>
     <div id="pId" style="font-size:12px;opacity:.7;word-break:break-all;margin-top:4px;cursor:pointer" title="Tap to copy"></div>
     <label class="f">Display name<input type="text" id="pName" maxlength="24" placeholder="Display name"></label>
@@ -252,7 +295,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
   </div>
 </div>
 
-<!-- Logs (owner only) -->
+<!-- Activity Logs (owner only) -->
 <div class="overlay hide" id="logBox">
   <div class="modal wide">
     <h3>📜 Activity Logs</h3>
@@ -333,7 +376,8 @@ function renderHeader() {
   if (isStaff()) h.append(mk("+ Add Vouch", "btn", openAddVouch));
   if (isStaff()) h.append(mk("+ Add Product", "btn", openForm));
   if (role === "owner") h.append(mk("Users", "btn ghost", openStaff));
-  if (role === "owner") h.append(mk("📜 Logs", "btn ghost", openLogs));
+  if (role === "owner") h.append(mk("🗂 Chat Logs", "btn ghost", openChatLogs));
+  if (role === "owner") h.append(mk("📜 Activity", "btn ghost", openLogs));
   h.append(mk("Logout", "btn ghost", async () => { await log("Logged out"); sb.auth.signOut(); }));
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
@@ -535,7 +579,7 @@ $("fVid").onchange = e => {
 $("save").onclick = async () => {
   const name = $("fName").value.trim(), raw = $("fPrice").value.replace(/[₱,\s]/g, "");
   if (!name || !raw || isNaN(raw)) { alert("Enter a name and a price in ₱ (numbers only)."); return; }
-  const disc = $("fDisc").value.trim();
+  const disc = normDisc($("fDisc").value);
   if (!validDisc(disc)) { alert("Discord link must look like https://discord.gg/xxxx or https://discord.com/invite/xxxx"); return; }
   const btn = $("save"); btn.disabled = true; btn.textContent = "Saving...";
   try {
@@ -607,6 +651,34 @@ $("vSave").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "Post Vouch";
 };
+  
+/* ---------- helpers: avatars + profiles cache ---------- */
+const PROFS = {};
+const colorFor = n => { let h = 0; for (const ch of String(n || "?")) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
+function avEl(url, name, cls) {
+  if (url) { const i = document.createElement("img"); i.className = cls; i.src = url; i.alt = ""; return i; }
+  const d = document.createElement("div"); d.className = cls;
+  d.style.background = "hsl(" + colorFor(name) + ",55%,35%)";
+  d.textContent = String(name || "?").trim().charAt(0).toUpperCase();
+  return d;
+}
+const profOf = id => PROFS[id] || SELLERS[id] || null;
+async function loadProfs(ids) {
+  const need = [...new Set(ids)].filter(i => i && !PROFS[i]);
+  if (!need.length) return;
+  try {
+    const { data } = await sb.from("profiles").select("id,email,display_name,avatar_url").in("id", need);
+    (data || []).forEach(x => PROFS[x.id] = x);
+  } catch (e) {}
+}
+const isImgUrl = t => /^https?:\/\/\S+\.(jpe?g|png|gif|webp)(\?\S*)?$/i.test(t);
+const isVidUrl = t => /^https?:\/\/\S+\.(mp4|mov|webm|m4v|3gp)(\?\S*)?$/i.test(t);
+function shortTime(d) {
+  const t = new Date(d), n = new Date();
+  if (t.toDateString() === n.toDateString()) return t.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
+  return t.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+}
+
 /* ---------- BUY -> chat with the product's seller ---------- */
 async function buy(p) {
   if (!me) { setMode("buyer"); $("loginBox").classList.remove("hide"); return; }
@@ -624,108 +696,203 @@ async function buy(p) {
     c = r.data;
     log("Started chat", "buyer " + myName() + " -> seller " + c.seller_name + " re: " + p.name);
   }
-  openChat(c);
+  openChat(c, null);
 }
 
-/* ---------- inbox ---------- */
-function otherParty(c) {
-  if (me.id === c.buyer_id) return "Seller: " + c.seller_name;
-  if (me.id === c.seller_id) return "Buyer: " + c.buyer_name;
-  return c.buyer_name + " ↔ " + c.seller_name;
+/* ---------- conversations list (shared by Messages + Chat Logs) ---------- */
+async function fetchConvos(onlyMine) {
+  let q = sb.from("conversations").select("*");
+  if (onlyMine) q = q.or("buyer_id.eq." + me.id + ",seller_id.eq." + me.id);
+  const { data, error } = await q.order("created_at", { ascending: false });
+  if (error) throw error;
+  const last = {};
+  if (data.length) {
+    const r = await sb.from("messages").select("convo_id,body,created_at,sender_id")
+      .in("convo_id", data.map(c => c.id)).order("created_at", { ascending: false }).limit(500);
+    (r.data || []).forEach(m => { if (!last[m.convo_id]) last[m.convo_id] = m; });
+  }
+  await loadProfs(data.flatMap(c => [c.buyer_id, c.seller_id]));
+  data.forEach(c => c._last = last[c.id] || null);
+  data.sort((a, b) => new Date((b._last || b).created_at) - new Date((a._last || a).created_at));
+  return data;
 }
+function preview(c, logMode) {
+  const m = c._last; if (!m) return "No messages yet";
+  const t = String(m.body || "").trim();
+  const txt = isImgUrl(t) ? "📷 Photo" : isVidUrl(t) ? "🎬 Video" : t;
+  return (!logMode && m.sender_id === me.id ? "You: " : "") + txt;
+}
+function convoItem(c, logMode) {
+  const mineBuyer = me.id === c.buyer_id;
+  const otherId = logMode ? c.buyer_id : (mineBuyer ? c.seller_id : c.buyer_id);
+  const otherName = logMode ? c.buyer_name : (mineBuyer ? c.seller_name : c.buyer_name);
+  const p = profOf(otherId);
+  const b = document.createElement("button"); b.className = "ib";
+  b.append(avEl(p && p.avatar_url, otherName, "cav"));
+  const x = document.createElement("div"); x.className = "ctx";
+  const t = document.createElement("b"); t.textContent = logMode ? c.buyer_name + " ↔ " + c.seller_name : otherName;
+  const sm = document.createElement("small"); sm.textContent = (c.product_name || "Product") + " · " + preview(c, logMode);
+  x.append(t, sm);
+  const tm = document.createElement("span"); tm.className = "tm"; tm.textContent = shortTime((c._last || c).created_at);
+  b.append(x, tm);
+  b.onclick = () => openChat(c, logMode ? "log" : "inbox");
+  return b;
+}
+
+/* ---------- Messages (MY chats only, even for owner) ---------- */
 async function openInbox() {
-  $("ibTitle").textContent = role === "owner" ? "💬 All Chats (owner view)" : "💬 Messages";
   $("inboxBox").classList.remove("hide");
   const list = $("ibList"); list.textContent = "Loading...";
-  const { data, error } = await sb.from("conversations").select("*").order("created_at", { ascending: false });
-  if (error) { list.textContent = error.message; return; }
-  list.replaceChildren();
-  if (!data.length) { list.textContent = "No chats yet. Tap BUY on a product to message its seller."; return; }
-  data.forEach(c => {
-    const b = document.createElement("button"); b.className = "ib";
-    const t = document.createElement("b"); t.textContent = c.product_name || "Product";
-    const sm = document.createElement("small"); sm.textContent = otherParty(c);
-    b.append(t, sm); b.onclick = () => openChat(c);
-    list.append(b);
-  });
+  try {
+    const data = await fetchConvos(true);
+    list.replaceChildren();
+    if (!data.length) { list.textContent = "No chats yet. Tap BUY on a product to message its seller."; return; }
+    data.forEach(c => list.append(convoItem(c, false)));
+  } catch (e) { list.textContent = e.message || String(e); }
 }
 $("ibClose").onclick = () => $("inboxBox").classList.add("hide");
 
-/* ---------- chat (refreshes every 4s) ---------- */
+/* ---------- Chat Logs (owner only: ALL chats, view only) ---------- */
+let CL = [];
+async function openChatLogs() {
+  if (role !== "owner") return;
+  $("clBox").classList.remove("hide"); $("clSearch").value = "";
+  const list = $("clList"); list.textContent = "Loading...";
+  try { CL = await fetchConvos(false); drawCL(); } catch (e) { list.textContent = e.message || String(e); }
+}
+function drawCL() {
+  const q = $("clSearch").value.trim().toLowerCase();
+  const list = $("clList"); list.replaceChildren();
+  const rows = CL.filter(c => !q || [c.buyer_name, c.seller_name, c.product_name].join(" ").toLowerCase().includes(q));
+  if (!rows.length) { list.textContent = "Walang chat."; return; }
+  rows.forEach(c => list.append(convoItem(c, true)));
+}
+$("clSearch").oninput = drawCL;
+$("clClose").onclick = () => $("clBox").classList.add("hide");
+
+/* ---------- chat window (Messenger style, refreshes every 4s) ---------- */
 function linkify(el, text) {
   const t = String(text || "").trim();
-  if (/^https?:\/\/\S+\.(jpe?g|png|gif|webp)(\?\S*)?$/i.test(t)) {
+  if (isImgUrl(t)) {
     const im = document.createElement("img");
     im.src = t; im.alt = "photo";
-    im.style.cssText = "display:block;width:100%;max-width:240px;border-radius:8px;cursor:pointer";
+    im.style.cssText = "display:block;width:220px;max-width:100%;border-radius:14px;cursor:pointer";
     im.onclick = () => window.open(t, "_blank");
-    el.append(im); return;
+    el.style.padding = "4px"; el.append(im); return;
   }
-  if (/^https?:\/\/\S+\.(mp4|mov|webm|m4v|3gp)(\?\S*)?$/i.test(t)) {
+  if (isVidUrl(t)) {
     const v = document.createElement("video");
     v.src = t; v.controls = true; v.playsInline = true; v.preload = "metadata";
-    v.style.cssText = "display:block;width:100%;max-width:240px;border-radius:8px;background:#000";
-    el.append(v); return;
+    v.style.cssText = "display:block;width:220px;max-width:100%;border-radius:14px;background:#000";
+    el.style.padding = "4px"; el.append(v); return;
   }
-  const re = /(https?:\/\/[^\s]+)/g;
-  String(text || "").split(re).forEach(part => {
+  String(text || "").split(/(https?:\/\/[^\s]+)/g).forEach(part => {
     if (/^https?:\/\//.test(part)) {
       const a = document.createElement("a");
       a.href = part; a.textContent = part; a.target = "_blank"; a.rel = "noopener noreferrer";
       el.append(a);
     } else if (part) el.append(document.createTextNode(part));
   });
-  }
-let curConvo = null, poll = null, lastCount = -1;
-function openChat(c) {
-  curConvo = c; lastCount = -1;
-  $("inboxBox").classList.add("hide");
-  $("cTitle").textContent = c.product_name || "Chat";
-  $("cSub").textContent = otherParty(c);
-  const member = me.id === c.buyer_id || me.id === c.seller_id;
-  $("cbar").classList.toggle("hide", !member);
+}
+let curConvo = null, poll = null, lastKey = "", cameFrom = null, curMember = false;
+function setHead() {
+  const c = curConvo; if (!c) return;
+  const mineBuyer = me.id === c.buyer_id;
+  const otherId = !curMember ? c.buyer_id : (mineBuyer ? c.seller_id : c.buyer_id);
+  const otherName = !curMember ? c.buyer_name + " ↔ " + c.seller_name : (mineBuyer ? c.seller_name : c.buyer_name);
+  const p = profOf(otherId);
+  $("cAv").replaceChildren(avEl(p && p.avatar_url, otherName, "cav"));
+  $("cTitle").textContent = otherName;
+  $("cSub").textContent = "🛒 " + (c.product_name || "Product");
+}
+function openChat(c, from) {
+  curConvo = c; lastKey = ""; cameFrom = from || null;
+  $("inboxBox").classList.add("hide"); $("clBox").classList.add("hide");
+  curMember = me.id === c.buyer_id || me.id === c.seller_id;
+  setHead();
+  const disc = $("cDisc"), pr = PRODUCTS.find(x => x.id === c.product_id);
+  if (curMember && pr && pr.discord_link && /^https:\/\//i.test(pr.discord_link)) {
+    const a = document.createElement("a");
+    a.href = pr.discord_link; a.textContent = pr.discord_link; a.target = "_blank"; a.rel = "noopener noreferrer";
+    disc.replaceChildren(document.createTextNode("Discord: "), a); disc.classList.remove("hide");
+  } else disc.classList.add("hide");
+  $("cbar").classList.toggle("hide", !curMember);
+  $("cRo").classList.toggle("hide", curMember);
   $("msgs").replaceChildren();
   $("chatBox").classList.remove("hide");
-  loadMsgs(); clearInterval(poll); poll = setInterval(loadMsgs, 4000);
-  if (member) $("cInput").focus();
+  clearInterval(poll); poll = setInterval(loadMsgs, 4000);
+  loadProfs([c.buyer_id, c.seller_id]).then(() => { if (curConvo === c) { setHead(); lastKey = ""; loadMsgs(); } });
+  loadMsgs();
+  if (curMember) $("cInput").focus();
 }
+$("cClose").onclick = () => {
+  clearInterval(poll); poll = null;
+  $("chatBox").classList.add("hide");
+  const f = cameFrom; curConvo = null;
+  if (f === "inbox") openInbox(); else if (f === "log") openChatLogs();
+};
 async function loadMsgs() {
-  if (!curConvo) return;
-  const { data, error } = await sb.from("messages").select("*").eq("convo_id", curConvo.id).order("created_at");
-  if (error || !data || data.length === lastCount) return;
-  lastCount = data.length;
-  const box = $("msgs"); box.replaceChildren();
-  if (!data.length) { const n = document.createElement("div"); n.className = "fn"; n.textContent = "Say hi 👋"; box.append(n); }
-  data.forEach(m => {
-    const d = document.createElement("div"); d.className = "m" + (m.sender_id === me.id ? " me" : "");
-    linkify(d, m.body);
-    const sm = document.createElement("small");
-    sm.textContent = m.sender_name + " · " + new Date(m.created_at).toLocaleString("en-PH", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" });
-    d.append(sm); box.append(d);
+  const c = curConvo; if (!c) return;
+  const { data, error } = await sb.from("messages").select("*").eq("convo_id", c.id).order("created_at");
+  if (c !== curConvo || error || !data) return;
+  const key = data.length + ":" + (data.length ? data[data.length - 1].id : "");
+  if (key === lastKey) return;
+  const first = lastKey === ""; lastKey = key;
+  const box = $("msgs");
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  box.replaceChildren();
+  if (!data.length) { const n = document.createElement("div"); n.className = "tsep"; n.textContent = "Say hi 👋"; box.append(n); }
+  const GAP = 30 * 60000;
+  let prev = null;
+  data.forEach((m, i) => {
+    const mine = curMember ? m.sender_id === me.id : m.sender_id === c.buyer_id;
+    const gap = !prev || new Date(m.created_at) - new Date(prev.created_at) > GAP;
+    if (gap) {
+      const ts = document.createElement("div"); ts.className = "tsep";
+      ts.textContent = new Date(m.created_at).toLocaleString("en-PH", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" });
+      box.append(ts);
+    }
+    const newGroup = gap || prev.sender_id !== m.sender_id;
+    const next = data[i + 1];
+    const lastInGroup = !next || next.sender_id !== m.sender_id || new Date(next.created_at) - new Date(m.created_at) > GAP;
+    if (!curMember && newGroup) {
+      const sn = document.createElement("div"); sn.className = "sname"; sn.textContent = m.sender_name;
+      sn.style.alignSelf = mine ? "flex-end" : "flex-start";
+      sn.style.margin = mine ? "8px 6px 2px 0" : "8px 0 2px 34px";
+      box.append(sn);
+    }
+    const r = document.createElement("div"); r.className = "row2" + (mine ? " me" : "") + (newGroup && curMember ? " first" : "");
+    if (!mine) {
+      if (lastInGroup) { const p = profOf(m.sender_id); r.append(avEl(p && p.avatar_url, m.sender_name, "sav")); }
+      else { const sp = document.createElement("div"); sp.className = "sp"; r.append(sp); }
+    }
+    const b = document.createElement("div"); b.className = "b";
+    linkify(b, m.body);
+    b.title = new Date(m.created_at).toLocaleString("en-PH");
+    r.append(b); box.append(r); prev = m;
   });
-  box.scrollTop = box.scrollHeight;
+  if (first || atBottom) box.scrollTop = box.scrollHeight;
+}
+async function sendRaw(body) {
+  const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
+  if (error) throw error;
+  await loadMsgs();
 }
 async function sendMsg() {
-  const body = $("cInput").value.trim(); if (!body || !curConvo) return;
-  const btn = $("cSend"); btn.disabled = true;
-  const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
-  btn.disabled = false;
-  if (error) { alert(error.message); return; }
+  const body = $("cInput").value.trim(); if (!body || !curConvo || !curMember) return;
+  const c = curConvo;
   $("cInput").value = "";
-  log("Sent message", myName() + " -> " + (me.id === curConvo.buyer_id ? curConvo.seller_name : curConvo.buyer_name) + " re: " + curConvo.product_name + ": " + body.slice(0, 80));
-  loadMsgs();
+  try {
+    await sendRaw(body);
+    log("Sent message", myName() + " -> " + (me.id === c.buyer_id ? c.seller_name : c.buyer_name) + " re: " + c.product_name + ": " + body.slice(0, 80));
+  } catch (e) { alert(e.message || e); $("cInput").value = body; }
+  $("cInput").focus();
 }
 $("cSend").onclick = sendMsg;
 $("cInput").onkeydown = e => { if (e.key === "Enter") sendMsg(); };
-  
-  async function sendRaw(body) {
-  const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
-  if (error) throw error;
-  loadMsgs();
-}
 $("cAtt").onclick = () => { $("cMedia").value = ""; $("cMedia").click(); };
 $("cMedia").onchange = async e => {
-  const f = e.target.files[0]; if (!f || !curConvo) return;
+  const f = e.target.files[0]; if (!f || !curConvo || !curMember) return;
   const isImg = f.type.startsWith("image/"), isVid = f.type.startsWith("video/");
   if (!isImg && !isVid) { alert("Photo o video lang."); return; }
   if (isVid && f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); return; }
@@ -733,32 +900,31 @@ $("cMedia").onchange = async e => {
   try {
     let url;
     if (isImg) {
-      const b = await new Promise(res => shrink(f, res));
-      url = await upload(b, "chat", "jpg", "image/jpeg");
-    } else {
-      url = await upload(f, "chat", extOf(f), f.type);
-    }
+      const blob = await new Promise(res => shrink(f, res));
+      url = await upload(blob, "chat", "jpg", "image/jpeg");
+    } else url = await upload(f, "chat", extOf(f), f.type);
     await sendRaw(url);
     log("Sent " + (isImg ? "photo" : "video"), myName() + " re: " + curConvo.product_name);
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "📎";
 };
 
-
-/* ---------- logs (owner only) ---------- */
+/* ---------- Activity logs (owner only) ---------- */
 async function openLogs() {
+  if (role !== "owner") return;
   $("logBox").classList.remove("hide");
   const list = $("logList"); list.textContent = "Loading...";
-  const { data, error } = await sb.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(200);
+  const { data, error } = await sb.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(150);
   if (error) { list.textContent = error.message; return; }
   list.replaceChildren();
-  if (!data.length) { list.textContent = "No activity yet."; return; }
+  if (!data.length) { list.textContent = "No logs yet."; return; }
   data.forEach(l => {
     const d = document.createElement("div"); d.className = "lg";
-    const b = document.createElement("b"); b.textContent = l.username + " (" + l.role + ") ";
-    d.append(b, document.createTextNode(l.action + (l.details ? " — " + l.details : "")));
-    const sm = document.createElement("small"); sm.textContent = new Date(l.created_at).toLocaleString("en-PH");
-    d.append(sm); list.append(d);
+    const b = document.createElement("b"); b.textContent = l.username || "user";
+    d.append(b, document.createTextNode(" (" + (l.role || "") + ") " + (l.action || "")));
+    if (l.details) { const sm = document.createElement("small"); sm.textContent = l.details; d.append(sm); }
+    const tm = document.createElement("small"); tm.textContent = new Date(l.created_at).toLocaleString("en-PH");
+    d.append(tm); list.append(d);
   });
 }
 $("logRefresh").onclick = openLogs;
@@ -771,7 +937,8 @@ async function loadSellers() {
 }
 function sellerName(p) { const x = SELLERS[p.seller_id]; return x ? (x.display_name || uname(x.email)) : (p.seller_name || "shop"); }
 function sellerUser(p) { const x = SELLERS[p.seller_id]; return x ? uname(x.email) : ""; }
-const validDisc = v => !v || /^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-Za-z0-9_-]+\/?$/i.test(v);
+const normDisc = v => { v = (v || "").trim(); if (!v) return ""; return /^https?:\/\//i.test(v) ? v : "https://" + v; };
+const validDisc = v => !v || /^https:\/\/(www\.)?(discord\.gg|discord(app)?\.com\/invite)\/[A-Za-z0-9_-]+\/?$/i.test(v);
 async function resolveOwner(u) {
   u = (u || "").trim().toLowerCase().replace(/\s+/g, "");
   if (!u) return { id: me.id, name: myName() };
@@ -794,7 +961,7 @@ function openEdit(p) {
 $("eCancel").onclick = () => $("editBox").classList.add("hide");
 $("eSave").onclick = async () => {
   if (!editing) return;
-  const disc = $("eDisc").value.trim();
+  const disc = normDisc($("eDisc").value);
   if (!validDisc(disc)) { alert("Discord link must look like https://discord.gg/xxxx or https://discord.com/invite/xxxx"); return; }
   const btn = $("eSave"); btn.disabled = true;
   try {
@@ -824,10 +991,10 @@ function openSeller(p) {
 }
 $("slClose").onclick = () => $("slBox").classList.add("hide");
 
-/* ---------- profile ---------- */
+/* ---------- my profile ---------- */
 let pendingAvatar = null;
 function openProfile() {
-  pendingAvatar = null; $("pFile").value = "";
+  pendingAvatar = null; $("pFile").value = ""; $("pUrl").value = "";
   $("pPrev").src = (prof && prof.avatar_url) || ph(uname(me.email).slice(0, 8), 0);
   $("pUser").textContent = "Username: " + uname(me.email) + " · " + role;
   $("pId").textContent = "User ID: " + me.id;
@@ -844,23 +1011,29 @@ function openProfile() {
 $("pCancel").onclick = () => $("profBox").classList.add("hide");
 $("pFile").onchange = e => {
   const f = e.target.files[0]; if (!f) return;
-  shrink(f, b => { pendingAvatar = b; $("pPrev").src = URL.createObjectURL(b); });
+  shrink(f, b => { pendingAvatar = b; $("pUrl").value = ""; $("pPrev").src = URL.createObjectURL(b); });
 };
+$("pUrl").oninput = () => { const v = $("pUrl").value.trim(); if (/^https?:\/\/\S+$/i.test(v)) { pendingAvatar = null; $("pPrev").src = v; } };
 $("pSave").onclick = async () => {
-  const btn = $("pSave"); btn.disabled = true; btn.textContent = "Saving...";
+  const btn = $("pSave");
+  const np = $("pPass").value;
+  if (np && np.length < 6) { alert("Password must be at least 6 characters."); return; }
+  const link = $("pUrl").value.trim();
+  if (link && !/^https?:\/\/\S+$/i.test(link)) { alert("Ang picture link dapat nagsisimula sa https://"); return; }
+  btn.disabled = true; btn.textContent = "Saving...";
   try {
     const upd = { display_name: $("pName").value.trim() || null, bio: $("pBio").value.trim() || null };
-    if (pendingAvatar) upd.avatar_url = await upload(pendingAvatar, "avatar", "jpg", "image/jpeg");
-    const { error } = await sb.from("profiles").update(upd).eq("id", me.id);
+    if (pendingAvatar) {
+      try { upd.avatar_url = await upload(pendingAvatar, "avatar", "jpg", "image/jpeg"); }
+      catch (e) { throw new Error("Hindi na-upload ang picture (" + (e.message || e) + "). Subukan mong i-paste na lang ang link sa 'paste picture link'."); }
+    } else if (link) upd.avatar_url = link;
+    const { data: rows, error } = await sb.from("profiles").update(upd).eq("id", me.id).select("id");
     if (error) throw error;
-    const np = $("pPass").value;
-    if (np) {
-      if (np.length < 6) { alert("Password must be at least 6 characters."); return; }
-      const r = await sb.auth.updateUser({ password: np });
-      if (r.error) throw r.error;
-    }
+    if (!rows || !rows.length) throw new Error("Hindi na-save ang profile (walang permission sa profiles table — check ang UPDATE policy sa Supabase).");
+    if (np) { const r = await sb.auth.updateUser({ password: np }); if (r.error) throw r.error; }
     log("Updated profile", upd.display_name || "");
     if (role === "staff" || role === "owner") { await sb.from("products").update({ seller_name: upd.display_name || uname(me.email) }).eq("seller_id", me.id); loadProducts(); }
+    delete PROFS[me.id];
     $("profBox").classList.add("hide");
     await refreshAuth();
   } catch (err) { alert("Error: " + (err.message || err)); }
