@@ -58,6 +58,13 @@ main{max-width:900px;margin:0 auto;padding:0 14px 30px}
 #prev{max-height:140px;border-radius:8px;object-fit:cover;width:100%}
 #vbox{max-width:640px;padding:10px;background:#000}
 #vbox video{width:100%;max-height:70vh;border-radius:8px;background:#000}
+.vcard{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;position:relative}
+.vcard b{font-size:13px;color:var(--accent)}
+.vcard p{margin:0;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.vcard img{width:100%;max-height:220px;object-fit:cover;border-radius:8px;cursor:pointer}
+.vcard small{color:var(--muted);font-size:11px}
+.vcard .vdel{position:absolute;top:6px;right:6px;border:0;background:var(--line);color:var(--text);border-radius:6px;font-size:11px;padding:3px 7px;cursor:pointer}
+#vList{display:flex;flex-direction:column;gap:8px}
 @media (max-width:560px){.show{grid-template-columns:1fr}}
 </style>
 </head>
@@ -123,7 +130,26 @@ main{max-width:900px;margin:0 auto;padding:0 14px 30px}
     <div class="row"><button class="btn ghost" id="cancel">Cancel</button><button class="btn" id="save">Save</button></div>
   </div>
 </div>
+<!-- See vouches (public) -->
+<div class="overlay hide" id="vouchBox">
+  <div class="modal">
+    <h3>✅ Vouched</h3>
+    <div id="vList"></div>
+    <button class="btn ghost" id="vouchClose">Close</button>
+  </div>
+</div>
 
+<!-- Add vouch (staff/owner) -->
+<div class="overlay hide" id="addVouch">
+  <div class="modal">
+    <h3>Add Vouch</h3>
+    <label class="f">Vouch message<textarea id="vMsg" rows="3" maxlength="300" placeholder="e.g. Legit buyer, smooth transaction!"></textarea></label>
+    <label class="pick" for="vFile">📷 Add Proof Picture (optional)</label>
+    <input class="vh" id="vFile" type="file" accept="image/*">
+    <img id="vPrev" class="hide" alt="" style="max-height:140px;border-radius:8px;object-fit:cover;width:100%">
+    <div class="row"><button class="btn ghost" id="vCancel">Cancel</button><button class="btn" id="vSave">Post Vouch</button></div>
+  </div>
+</div>
 <!-- Video player -->
 <div class="overlay hide" id="vOverlay">
   <div class="modal" id="vbox">
@@ -171,10 +197,12 @@ async function refreshAuth() {
 function mk(text, cls, fn) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = fn; return b; }
 function renderHeader() {
   const h = $("hdr"); h.replaceChildren();
+  h.append(mk("✅ See Vouched", "btn ghost", openVouches));
   if (!me) { h.append(mk("Staff Login", "btn ghost", () => { setMode(false); $("loginBox").classList.remove("hide"); })); return; }
   const badge = document.createElement("span"); badge.className = "badge";
   badge.textContent = role === "pending" ? "Waiting for approval" : role.toUpperCase();
   h.append(badge);
+  if (isStaff()) h.append(mk("+ Add Vouch", "btn", openAddVouch));
   if (isStaff()) h.append(mk("+ Add Product", "btn", openForm));
   if (role === "owner") h.append(mk("Staff", "btn ghost", openStaff));
   h.append(mk("Logout", "btn ghost", () => sb.auth.signOut()));
@@ -380,7 +408,72 @@ $("save").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "Save";
 };
+/* ---------- vouches ---------- */
+async function openVouches() {
+  $("vouchBox").classList.remove("hide");
+  const list = $("vList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("vouches").select("*").order("created_at", { ascending: false });
+  if (error) { list.textContent = "Couldn't load vouches: " + error.message; return; }
+  list.replaceChildren();
+  if (!data.length) { list.textContent = "No vouches yet."; return; }
+  data.forEach(v => {
+    const c = document.createElement("div"); c.className = "vcard";
+    const who = document.createElement("b"); who.textContent = "Vouch by " + (v.author || "staff");
+    const msg = document.createElement("p"); msg.textContent = v.message || "";
+    c.append(who, msg);
+    if (v.image_url) {
+      const im = document.createElement("img"); im.src = v.image_url; im.alt = "proof";
+      im.onclick = () => window.open(v.image_url, "_blank");
+      c.append(im);
+    }
+    const d = document.createElement("small"); d.textContent = new Date(v.created_at).toLocaleString("en-PH");
+    c.append(d);
+    if (me && (role === "owner" || v.user_id === me.id)) {
+      c.append(mk("Delete", "vdel", async () => {
+        if (!confirm("Delete this vouch?")) return;
+        const { error: e } = await sb.from("vouches").delete().eq("id", v.id);
+        if (e) alert(e.message); else openVouches();
+      }));
+    }
+    list.append(c);
+  });
+}
+$("vouchClose").onclick = () => $("vouchBox").classList.add("hide");
 
+let pendingVouchImg = null;
+function openAddVouch() {
+  $("vMsg").value = ""; $("vFile").value = ""; pendingVouchImg = null; $("vPrev").classList.add("hide");
+  $("addVouch").classList.remove("hide"); $("vMsg").focus();
+}
+$("vCancel").onclick = () => $("addVouch").classList.add("hide");
+$("vFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas"); cv.width = im.width * k; cv.height = im.height * k;
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      cv.toBlob(b => { pendingVouchImg = b; $("vPrev").src = URL.createObjectURL(b); $("vPrev").classList.remove("hide"); }, "image/jpeg", 0.85);
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(f);
+};
+$("vSave").onclick = async () => {
+  const message = $("vMsg").value.trim();
+  if (!message) { alert("Write a vouch message."); return; }
+  const btn = $("vSave"); btn.disabled = true; btn.textContent = "Posting...";
+  try {
+    const image_url = pendingVouchImg ? await upload(pendingVouchImg, "vouch", "jpg", "image/jpeg") : null;
+    const { error } = await sb.from("vouches").insert({ message, image_url });
+    if (error) throw error;
+    $("addVouch").classList.add("hide");
+    openVouches();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = "Post Vouch";
+};
 renderHeader(); render(); loadProducts(); refreshAuth();
 </script>
 </body>
