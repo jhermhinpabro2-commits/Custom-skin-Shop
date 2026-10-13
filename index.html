@@ -205,9 +205,12 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="fn" id="cSub"></div>
     <div id="msgs"></div>
     <div class="cbar" id="cbar">
-      <input type="text" id="cInput" maxlength="500" placeholder="Type a message...">
-      <button class="btn" id="cSend">Send</button>
-    </div>
+  <button class="btn ghost" id="cCall" title="Call">📞</button>
+  <button class="btn ghost" id="cAtt" title="Send photo/video">📎</button>
+  <input type="text" id="cInput" maxlength="500" placeholder="Type a message...">
+  <button class="btn" id="cSend">Send</button>
+</div>
+<input class="vh" id="cMedia" type="file" accept="image/*,video/*">
     <button class="btn ghost" id="cClose">Close</button>
   </div>
 </div>
@@ -651,6 +654,20 @@ $("ibClose").onclick = () => $("inboxBox").classList.add("hide");
 
 /* ---------- chat (refreshes every 4s) ---------- */
 function linkify(el, text) {
+  const t = String(text || "").trim();
+  if (/^https?:\/\/\S+\.(jpe?g|png|gif|webp)(\?\S*)?$/i.test(t)) {
+    const im = document.createElement("img");
+    im.src = t; im.alt = "photo";
+    im.style.cssText = "display:block;width:100%;max-width:240px;border-radius:8px;cursor:pointer";
+    im.onclick = () => window.open(t, "_blank");
+    el.append(im); return;
+  }
+  if (/^https?:\/\/\S+\.(mp4|mov|webm|m4v|3gp)(\?\S*)?$/i.test(t)) {
+    const v = document.createElement("video");
+    v.src = t; v.controls = true; v.playsInline = true; v.preload = "metadata";
+    v.style.cssText = "display:block;width:100%;max-width:240px;border-radius:8px;background:#000";
+    el.append(v); return;
+  }
   const re = /(https?:\/\/[^\s]+)/g;
   String(text || "").split(re).forEach(part => {
     if (/^https?:\/\//.test(part)) {
@@ -659,7 +676,7 @@ function linkify(el, text) {
       el.append(a);
     } else if (part) el.append(document.createTextNode(part));
   });
-}
+  }
 let curConvo = null, poll = null, lastCount = -1;
 function openChat(c) {
   curConvo = c; lastCount = -1;
@@ -702,6 +719,42 @@ async function sendMsg() {
 $("cSend").onclick = sendMsg;
 $("cInput").onkeydown = e => { if (e.key === "Enter") sendMsg(); };
 $("cClose").onclick = () => { clearInterval(poll); curConvo = null; $("chatBox").classList.add("hide"); };
+  
+  async function sendRaw(body) {
+  const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
+  if (error) throw error;
+  loadMsgs();
+}
+$("cAtt").onclick = () => { $("cMedia").value = ""; $("cMedia").click(); };
+$("cMedia").onchange = async e => {
+  const f = e.target.files[0]; if (!f || !curConvo) return;
+  const isImg = f.type.startsWith("image/"), isVid = f.type.startsWith("video/");
+  if (!isImg && !isVid) { alert("Photo o video lang."); return; }
+  if (isVid && f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); return; }
+  const btn = $("cAtt"); btn.disabled = true; btn.textContent = "⏳";
+  try {
+    let url;
+    if (isImg) {
+      const b = await new Promise(res => shrink(f, res));
+      url = await upload(b, "chat", "jpg", "image/jpeg");
+    } else {
+      url = await upload(f, "chat", extOf(f), f.type);
+    }
+    await sendRaw(url);
+    log("Sent " + (isImg ? "photo" : "video"), myName() + " re: " + curConvo.product_name);
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = "📎";
+};
+$("cCall").onclick = async () => {
+  if (!curConvo) return;
+  const room = "shop-" + curConvo.id.replace(/-/g, "").slice(0, 12) + "-" + Math.random().toString(36).slice(2, 8);
+  const url = "https://meet.jit.si/" + room + "#config.startWithVideoMuted=true";
+  window.open(url, "_blank");
+  try {
+    await sendRaw("📞 Tawag. Pindutin para sumali: " + url);
+    log("Started call", myName() + " re: " + curConvo.product_name);
+  } catch (err) { alert("Error: " + (err.message || err)); }
+};
 
 /* ---------- logs (owner only) ---------- */
 async function openLogs() {
