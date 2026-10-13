@@ -229,6 +229,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <h3 id="slNm" style="text-align:center"></h3>
     <div class="fn" id="slRole"></div>
     <p id="slBio" style="margin:0;text-align:center;color:var(--muted);white-space:pre-wrap"></p>
+    <div id="slId" style="font-size:12px;opacity:.7;word-break:break-all"></div>
     <button class="btn ghost" id="slClose">Close</button>
   </div>
 </div>
@@ -241,6 +242,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <label class="pick" for="pFile">📷 Change Picture</label>
     <input class="vh" id="pFile" type="file" accept="image/*">
     <div class="fn" id="pUser"></div>
+    <div id="pId" style="font-size:12px;opacity:.7;word-break:break-all;margin-top:4px;cursor:pointer" title="Tap to copy"></div>
     <label class="f">Display name<input type="text" id="pName" maxlength="24" placeholder="Display name"></label>
     <label class="f">Bio<textarea id="pBio" rows="3" maxlength="160" placeholder="About you (optional)"></textarea></label>
     <label class="f">New password (leave blank to keep)<input type="password" id="pPass" autocomplete="new-password"></label>
@@ -256,14 +258,13 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="row"><button class="btn ghost" id="logRefresh">Refresh</button><button class="btn ghost" id="logClose">Close</button></div>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CONFIG (edit these) ===== */
 const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0";
 const MAX_VIDEO_MB = 50;
-const LOGIN_DOMAIN = "shopstaff.com"; // hidden: username "juan" becomes juan@shopstaff.com (no "@" here!)
+const LOGIN_DOMAIN = "shopstaff.com";
 /* =============================== */
 
 const $ = id => document.getElementById(id);
@@ -302,7 +303,7 @@ async function refreshAuth() {
   let created = false;
   if (me) {
     let { data } = await sb.from("profiles").select("*").eq("id", me.id).maybeSingle();
-    if (!data) { // new account with no profile row yet
+    if (!data) {
       const want = (me.user_metadata && me.user_metadata.want) === "staff" ? "pending" : "buyer";
       await sb.from("profiles").insert({ id: me.id, email: me.email, role: want });
       ({ data } = await sb.from("profiles").select("*").eq("id", me.id).maybeSingle());
@@ -604,7 +605,6 @@ $("vSave").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "Post Vouch";
 };
-
 /* ---------- BUY -> chat with the product's seller ---------- */
 async function buy(p) {
   if (!me) { setMode("buyer"); $("loginBox").classList.remove("hide"); return; }
@@ -650,6 +650,16 @@ async function openInbox() {
 $("ibClose").onclick = () => $("inboxBox").classList.add("hide");
 
 /* ---------- chat (refreshes every 4s) ---------- */
+function linkify(el, text) {
+  const re = /(https?:\/\/[^\s]+)/g;
+  String(text || "").split(re).forEach(part => {
+    if (/^https?:\/\//.test(part)) {
+      const a = document.createElement("a");
+      a.href = part; a.textContent = part; a.target = "_blank"; a.rel = "noopener noreferrer";
+      el.append(a);
+    } else if (part) el.append(document.createTextNode(part));
+  });
+}
 let curConvo = null, poll = null, lastCount = -1;
 function openChat(c) {
   curConvo = c; lastCount = -1;
@@ -723,55 +733,52 @@ const validDisc = v => !v || /^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-
 async function resolveOwner(u) {
   u = (u || "").trim().toLowerCase().replace(/\s+/g, "");
   if (!u) return { id: me.id, name: myName() };
-  const { data, error } = await sb.from("profiles").select("*").eq("email", u + "@" + LOGIN_DOMAIN).maybeSingle();
-  if (error || !data) throw new Error("User '" + u + "' not found.");
-  if (!["buyer", "staff", "owner"].includes(data.role)) throw new Error("'" + u + "' is not approved yet.");
+  const { data, error } = await sb.from("profiles").select("id,email,display_name,role").eq("email", u + "@" + LOGIN_DOMAIN).maybeSingle();
+  if (error) throw error;
+  if (!data || !["staff", "owner"].includes(data.role)) throw new Error("Walang staff na may username na '" + u + "'.");
   return { id: data.id, name: data.display_name || uname(data.email) };
 }
-function linkify(el, text) {
-  text.split(/(https?:\/\/[^\s]+)/g).forEach(part => {
-    if (/^https?:\/\//.test(part)) { const a = document.createElement("a"); a.href = part; a.target = "_blank"; a.rel = "noopener"; a.textContent = part; el.append(a); }
-    else el.append(document.createTextNode(part));
-  });
-}
+
+/* ---------- edit product ---------- */
 let editing = null;
 function openEdit(p) {
   editing = p;
   $("eTitle").textContent = "Edit: " + p.name;
   $("eDisc").value = p.discord_link || "";
-  $("eOwn").value = sellerUser(p);
+  $("eOwn").value = "";
   $("eOwnWrap").classList.toggle("hide", role !== "owner");
   $("editBox").classList.remove("hide");
 }
 $("eCancel").onclick = () => $("editBox").classList.add("hide");
 $("eSave").onclick = async () => {
+  if (!editing) return;
   const disc = $("eDisc").value.trim();
   if (!validDisc(disc)) { alert("Discord link must look like https://discord.gg/xxxx or https://discord.com/invite/xxxx"); return; }
   const btn = $("eSave"); btn.disabled = true;
   try {
     const upd = { discord_link: disc || null };
-    const newOwn = $("eOwn").value.trim().toLowerCase();
-    if (role === "owner" && newOwn && newOwn !== sellerUser(editing)) {
-      const o = await resolveOwner(newOwn); upd.seller_id = o.id; upd.seller_name = o.name;
+    if (role === "owner" && $("eOwn").value.trim()) {
+      const own = await resolveOwner($("eOwn").value);
+      upd.seller_id = own.id; upd.seller_name = own.name;
     }
-    const { data, error } = await sb.from("products").update(upd).eq("id", editing.id).select();
+    const { error } = await sb.from("products").update(upd).eq("id", editing.id);
     if (error) throw error;
-    if (!data || !data.length) throw new Error("Hindi na-save (walang permission).");
     log("Edited product", editing.name + (upd.seller_name ? " -> owner " + upd.seller_name : "") + (disc ? " (discord set)" : ""));
     $("editBox").classList.add("hide");
     await loadProducts();
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false;
 };
+
+/* ---------- seller profile ---------- */
 function openSeller(p) {
   const x = SELLERS[p.seller_id];
   $("slAv").src = (x && x.avatar_url) || ph(sellerName(p).slice(0, 8), 0);
   $("slNm").textContent = sellerName(p);
   $("slRole").textContent = x ? "@" + uname(x.email) + " · " + x.role : "";
   $("slBio").textContent = (x && x.bio) || "";
-  <div id="slId" style="font-size:12px;opacity:.7;word-break:break-all"></div>
-  $("slBox").classList.remove("hide");
   $("slId").textContent = "User ID: " + p.seller_id;
+  $("slBox").classList.remove("hide");
 }
 $("slClose").onclick = () => $("slBox").classList.add("hide");
 
@@ -781,13 +788,12 @@ function openProfile() {
   pendingAvatar = null; $("pFile").value = "";
   $("pPrev").src = (prof && prof.avatar_url) || ph(uname(me.email).slice(0, 8), 0);
   $("pUser").textContent = "Username: " + uname(me.email) + " · " + role;
-  <div id="pId" style="font-size:12px;opacity:.7;word-break:break-all;margin-top:4px;cursor:pointer" title="Tap to copy"></div>
   $("pId").textContent = "User ID: " + me.id;
   $("pId").onclick = () => {
-  navigator.clipboard.writeText(me.id)
-    .then(() => alert("User ID copied!"))
-    .catch(() => {});
-};
+    navigator.clipboard.writeText(me.id)
+      .then(() => alert("User ID copied!"))
+      .catch(() => {});
+  };
   $("pName").value = (prof && prof.display_name) || "";
   $("pBio").value = (prof && prof.bio) || "";
   $("pPass").value = "";
