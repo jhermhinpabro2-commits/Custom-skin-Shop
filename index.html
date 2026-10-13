@@ -205,7 +205,6 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="fn" id="cSub"></div>
     <div id="msgs"></div>
     <div class="cbar" id="cbar">
-  <button class="btn ghost" id="cCall" title="Call">📞</button>
   <button class="btn ghost" id="cAtt" title="Send photo/video">📎</button>
   <input type="text" id="cInput" maxlength="500" placeholder="Type a message...">
   <button class="btn" id="cSend">Send</button>
@@ -718,7 +717,6 @@ async function sendMsg() {
 }
 $("cSend").onclick = sendMsg;
 $("cInput").onkeydown = e => { if (e.key === "Enter") sendMsg(); };
-$("cClose").onclick = () => { clearInterval(poll); curConvo = null; $("chatBox").classList.add("hide"); };
   
   async function sendRaw(body) {
   const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
@@ -745,16 +743,7 @@ $("cMedia").onchange = async e => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "📎";
 };
-$("cCall").onclick = async () => {
-  if (!curConvo) return;
-  const room = "shop-" + curConvo.id.replace(/-/g, "").slice(0, 12) + "-" + Math.random().toString(36).slice(2, 8);
-  const url = "https://meet.jit.si/" + room + "#config.startWithVideoMuted=true";
-  window.open(url, "_blank");
-  try {
-    await sendRaw("📞 Tawag. Pindutin para sumali: " + url);
-    log("Started call", myName() + " re: " + curConvo.product_name);
-  } catch (err) { alert("Error: " + (err.message || err)); }
-};
+
 
 /* ---------- logs (owner only) ---------- */
 async function openLogs() {
