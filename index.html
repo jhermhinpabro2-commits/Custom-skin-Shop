@@ -12,12 +12,16 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px;max-width:900px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:14px;max-width:900px;margin:0 auto}
 header b{font-size:22px}
+#hdr{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 main{max-width:900px;margin:0 auto;padding:0 14px 30px}
 .btn{border:0;cursor:pointer;background:var(--accent);color:#fff;font-weight:700;padding:10px 14px;border-radius:10px;font-size:14px;text-decoration:none;display:block;text-align:center;font-family:inherit}
-header .btn{display:inline-block}
+#hdr .btn{display:inline-block;padding:8px 12px}
 .btn.ghost{background:var(--line);color:var(--text)}
+.btn:disabled{opacity:.6}
+.badge{font-size:11px;font-weight:700;background:var(--line);padding:4px 8px;border-radius:6px}
+.note{color:var(--muted);text-align:center;font-size:13px;padding:6px 0}
 .show{display:grid;grid-template-columns:1.2fr 1fr;background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:18px}
 .show img{width:100%;height:100%;aspect-ratio:4/3;object-fit:cover;display:block}
 .sinfo{padding:18px;display:flex;flex-direction:column;justify-content:center;gap:8px}
@@ -36,32 +40,34 @@ header .btn{display:inline-block}
 .name{font-weight:700}
 .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:#000a;color:#fff;cursor:pointer}
 .empty{text-align:center;color:var(--muted);padding:60px 16px;border:2px dashed var(--line);border-radius:16px}
-.empty .btn{margin:14px auto 0;display:inline-block}
 .hide{display:none!important}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
-.modal{background:var(--card);width:100%;max-width:400px;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto;position:relative}
+.modal{background:var(--card);width:100%;max-width:400px;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
 .modal h3{margin:0}
 .modal label.f{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
-.modal input[type=text],.modal textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%}
+.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%}
 .money{display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding-left:10px;color:var(--text);font-weight:700}
 .money input{border:0!important;background:transparent!important;flex:1}
-.pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
+  pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
 .fn{font-size:12px;color:var(--muted);text-align:center}
 .row{display:flex;gap:8px}.row .btn{flex:1}
-  #prev{max-height:140px;border-radius:8px;object-fit:cover;width:100%}
+.mem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.mem span{overflow:hidden;text-overflow:ellipsis}
+.mem .btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+#prev{max-height:140px;border-radius:8px;object-fit:cover;width:100%}
 #vbox{max-width:640px;padding:10px;background:#000}
 #vbox video{width:100%;max-height:70vh;border-radius:8px;background:#000}
 @media (max-width:560px){.show{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><b>🛒 My Shop</b><button class="btn" id="addBtn">+ Add Product</button></header>
+<header><b>🛒 My Shop</b><div id="hdr"></div></header>
 <main>
+  <div class="note" id="note"></div>
   <div class="empty" id="empty">
     <div style="font-size:40px">📦</div>
-    <div>No products yet.</div>
-    <button class="btn" id="addBtn2">+ Add your first product</button>
+    <div id="emptyMsg">No products yet. Check back soon!</div>
   </div>
 
   <section class="show hide" id="show">
@@ -79,7 +85,27 @@ header .btn{display:inline-block}
   <div class="grid" id="grid"></div>
 </main>
 
-<!-- Add product form -->
+<!-- Login -->
+<div class="overlay hide" id="loginBox">
+  <div class="modal">
+    <h3>Owner / Staff Login</h3>
+    <label class="f">Username<input type="text" id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off"></label>
+    <label class="f">Password<input type="password" id="lPass" autocomplete="current-password"></label>
+    <button class="btn" id="doLogin">Login</button>
+    <button class="btn ghost" id="lCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Staff list (owner only) -->
+<div class="overlay hide" id="staffBox">
+  <div class="modal">
+    <h3>Staff</h3>
+    <div id="staffList"></div>
+    <button class="btn ghost" id="sClose">Close</button>
+  </div>
+</div>
+
+<!-- Add product -->
 <div class="overlay hide" id="overlay">
   <div class="modal">
     <h3>Add Product</h3>
@@ -105,52 +131,108 @@ header .btn{display:inline-block}
 </div>
 <input class="vh" id="aFile" type="file" accept="video/*">
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
-/* ===== CONFIG ===== */
+/* ===== CONFIG (edit these) ===== */
+const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co/rest/v1/";      // Supabase > Project Settings > API > Project URL
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0"; // same page > anon / publishable key (safe to be public)
 const DISCORD_LINK = "https://discord.gg/sbCZm6q6M";
-// For public buyers use an invite instead: "https://discord.gg/yourcode"
-const MAX_VIDEO_MB = 200;
-/* ================== */
+const MAX_VIDEO_MB = 500;
+const LOGIN_DOMAIN = "shopstaff.com";           // hidden: username "juan" is stored as juan@shopstaff.com (no real email needed)                        // Supabase free plan limit per file
+/* =============================== */
 
 const $ = id => document.getElementById(id);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const KEY = "shop_products_v1";
-let PRODUCTS = [];
-try { PRODUCTS = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
-PRODUCTS.forEach(p => { if (!p.id) p.id = uid(); });
-const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(PRODUCTS)); return true; } catch (e) { return false; } };
-
-// Philippine peso display
-const peso = v => /^[\d.,\s]+$/.test(String(v)) ? "₱" + Number(String(v).replace(/[,\s]/g, "")).toLocaleString("en-PH", {minimumFractionDigits: 0, maximumFractionDigits: 2}) : v;
-
-// Videos are stored in IndexedDB (bigger than localStorage)
-const dbp = new Promise(res => { try { const r = indexedDB.open("shopdb", 1); r.onupgradeneeded = () => r.result.createObjectStore("vid"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch (e) { res(null); } });
-const vput = async (id, blob) => { const d = await dbp; if (!d) return false; return new Promise(r => { const t = d.transaction("vid", "readwrite"); t.objectStore("vid").put(blob, id); t.oncomplete = () => r(true); t.onerror = () => r(false); }); };
-const vget = async id => { const d = await dbp; if (!d) return null; return new Promise(r => { const q = d.transaction("vid").objectStore("vid").get(id); q.onsuccess = () => r(q.result || null); q.onerror = () => r(null); }); };
-const vdel = async id => { const d = await dbp; if (d) d.transaction("vid", "readwrite").objectStore("vid").delete(id); };
-
+const peso = v => "₱" + Number(v).toLocaleString("en-PH", {minimumFractionDigits: 0, maximumFractionDigits: 2});
 const ph = (t, h) => "data:image/svg+xml;utf8," + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450"><defs><linearGradient id="g"><stop offset="0" stop-color="hsl(${h},70%,45%)"/><stop offset="1" stop-color="hsl(${h+60},70%,30%)"/></linearGradient></defs><rect width="600" height="450" fill="url(#g)"/><text x="300" y="235" font-size="48" font-family="sans-serif" fill="#fff" text-anchor="middle">${t.replace(/[<>&]/g, "")}</text></svg>`);
-const pic = (p, i) => p.image || ph(p.name, 20 + i * 70);
+const pic = (p, i) => p.image_url || ph(p.name, 20 + i * 70);
 
+if (SUPABASE_URL.startsWith("YOUR_")) {
+  $("note").textContent = "⚠️ Setup needed: put your Supabase URL and key in the CONFIG section.";
+}
+const sb = supabase.createClient(SUPABASE_URL.startsWith("YOUR_") ? "https://example.supabase.co" : SUPABASE_URL, SUPABASE_KEY);
+
+let me = null, role = null, PRODUCTS = [], s = 0, target = null;
+const isStaff = () => role === "owner" || role === "staff";
+
+/* ---------- auth + header ---------- */
+async function refreshAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  me = session ? session.user : null; role = null;
+  if (me) {
+    const { data } = await sb.from("profiles").select("role").eq("id", me.id).maybeSingle();
+    role = data ? data.role : "pending";
+  }
+  renderHeader(); render();
+}
+function mk(text, cls, fn) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = fn; return b; }
+function renderHeader() {
+  const h = $("hdr"); h.replaceChildren();
+  if (!me) { h.append(mk("Staff Login", "btn ghost", () => $("loginBox").classList.remove("hide"))); return; }
+  const badge = document.createElement("span"); badge.className = "badge";
+  badge.textContent = role === "pending" ? "Waiting for approval" : role.toUpperCase();
+  h.append(badge);
+  if (isStaff()) h.append(mk("+ Add Product", "btn", openForm));
+  if (role === "owner") h.append(mk("Staff", "btn ghost", openStaff));
+  h.append(mk("Logout", "btn ghost", () => sb.auth.signOut()));
+}
+sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
+
+$("lCancel").onclick = () => $("loginBox").classList.add("hide");
+const uname = e => (e || "").replace("@" + LOGIN_DOMAIN, "");
+$("doLogin").onclick = async () => {
+  const user = $("lUser").value.trim().toLowerCase().replace(/\s+/g, "");
+  if (!user) { alert("Enter your username."); return; }
+  const { error } = await sb.auth.signInWithPassword({ email: user + "@" + LOGIN_DOMAIN, password: $("lPass").value });
+  if (error) alert("Wrong username or password."); else { $("lPass").value = ""; $("loginBox").classList.add("hide"); }
+};
+
+/* ---------- staff list (owner) ---------- */
+async function openStaff() {
+  $("staffBox").classList.remove("hide");
+  const list = $("staffList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("profiles").select("*").order("email");
+  if (error) { list.textContent = error.message; return; }
+  list.replaceChildren();
+  data.forEach(m => {
+    const r = document.createElement("div"); r.className = "mem";
+    const t = document.createElement("span"); t.textContent = uname(m.email) + " · " + (m.role === "pending" ? "removed" : m.role);
+    r.append(t);
+    if (m.role !== "owner") {
+      const next = m.role === "staff" ? "pending" : "staff";
+      r.append(mk(m.role === "staff" ? "Remove" : "Add back", "btn", async () => {
+        const { error: e } = await sb.from("profiles").update({ role: next }).eq("id", m.id);
+        if (e) alert(e.message); else openStaff();
+      }));
+    }
+    list.append(r);
+  });
+}
+$("sClose").onclick = () => $("staffBox").classList.add("hide");
+
+/* ---------- products ---------- */
+async function loadProducts() {
+  const { data, error } = await sb.from("products").select("*").order("created_at");
+  if (error) { if (!SUPABASE_URL.startsWith("YOUR_")) $("note").textContent = "Couldn't load products: " + error.message; return; }
+  PRODUCTS = data; render();
+}
 function buyLink() {
   const a = document.createElement("a");
   a.className = "btn"; a.textContent = "BUY"; a.href = DISCORD_LINK; a.target = "_blank"; a.rel = "noopener";
   return a;
 }
-// Button above BUY: play showcase video, or add one
+// Button above BUY. Buyers: play video (only if there is one). Staff: can also add a video.
 function vidBtn(p) {
-  const b = document.createElement("button");
-  b.className = "btn ghost";
-  if (p.hasVid) { b.textContent = "▶ Showcase"; b.onclick = () => playVid(p); }
-  else { b.textContent = "🎬 Add Showcase Video"; b.onclick = () => { target = p; $("aFile").value = ""; $("aFile").click(); }; }
-  return b;
+  if (p.video_url) return mk("▶ Showcase", "btn ghost", () => playVid(p));
+  if (isStaff()) return mk("🎬 Add Showcase Video", "btn ghost", () => { target = p; $("aFile").value = ""; $("aFile").click(); });
+  return null;
 }
+const acts = p => [vidBtn(p), buyLink()].filter(Boolean);
 
-let s = 0, target = null;
 function render() {
   const has = PRODUCTS.length > 0;
   $("empty").classList.toggle("hide", has);
+  $("emptyMsg").textContent = isStaff() ? "No products yet. Tap “+ Add Product” to start." : "No products yet. Check back soon!";
   $("show").classList.toggle("hide", !has);
   $("grid").innerHTML = ""; $("dots").innerHTML = "";
   if (!has) return;
@@ -163,14 +245,14 @@ function render() {
 
     const c = document.createElement("div"); c.className = "card";
     const img = document.createElement("img"); img.src = pic(p, i); img.alt = p.name;
-    img.onclick = () => { s = i; showProduct(); window.scrollTo({top: 0, behavior: "smooth"}); };
+    img.onclick = () => { s = i; showProduct(); window.scrollTo({ top: 0, behavior: "smooth" }); };
     const info = document.createElement("div"); info.className = "info";
     const n = document.createElement("div"); n.className = "name"; n.textContent = p.name;
     const pr = document.createElement("div"); pr.className = "price"; pr.textContent = peso(p.price);
-    const acts = document.createElement("div"); acts.className = "acts"; acts.append(vidBtn(p), buyLink());
-    const del = document.createElement("button"); del.className = "del"; del.textContent = "✕"; del.title = "Delete";
-    del.onclick = () => { if (confirm("Delete " + p.name + "?")) { vdel(p.id); PRODUCTS.splice(i, 1); persist(); render(); } };
-    info.append(n, pr, acts); c.append(img, info, del); $("grid").appendChild(c);
+    const a = document.createElement("div"); a.className = "acts"; a.append(...acts(p));
+    info.append(n, pr, a); c.append(img, info);
+    if (isStaff()) c.append(mk("✕", "del", () => delProduct(p)));
+    $("grid").appendChild(c);
   });
   showProduct();
 }
@@ -178,45 +260,59 @@ function showProduct() {
   const p = PRODUCTS[s]; if (!p) return;
   $("sImg").src = pic(p, s);
   $("sName").textContent = p.name;
-  $("sDesc").textContent = p.desc || "";
+  $("sDesc").textContent = p.descr || "";
   $("sPrice").textContent = peso(p.price);
-  $("sActs").replaceChildren(vidBtn(p), buyLink());
+  $("sActs").replaceChildren(...acts(p));
   [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i === s));
 }
-const modalOpen = () => !$("overlay").classList.contains("hide") || !$("vOverlay").classList.contains("hide");
+const modalOpen = () => document.querySelector(".overlay:not(.hide)") !== null;
 setInterval(() => { if (PRODUCTS.length > 1 && !modalOpen()) { s = (s + 1) % PRODUCTS.length; showProduct(); } }, 5000);
 
-// ---- Video player ----
-async function playVid(p) {
-  const blob = await vget(p.id);
-  if (!blob) { alert("Video not found. Add it again."); p.hasVid = false; persist(); render(); return; }
-  const v = $("player");
-  let tried = false;
-  v.onerror = () => { // fallback if blob: URLs are blocked
-    if (tried) return; tried = true;
-    const r = new FileReader(); r.onload = () => { v.src = r.result; v.play().catch(() => {}); }; r.readAsDataURL(blob);
-  };
-  v.src = URL.createObjectURL(blob);
-  $("vOverlay").classList.remove("hide");
-  v.play().catch(() => {});
+async function delProduct(p) {
+  if (!confirm("Delete " + p.name + "?")) return;
+  const { error } = await sb.from("products").delete().eq("id", p.id);
+  if (error) { alert(error.message); return; }
+  const paths = [p.image_url, p.video_url].filter(Boolean).map(u => decodeURIComponent(u.split("/media/")[1] || "")).filter(Boolean);
+  if (paths.length) sb.storage.from("media").remove(paths);
+  loadProducts();
+}
+
+/* ---------- upload helper ---------- */
+async function upload(blob, folder, ext, type) {
+  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await sb.storage.from("media").upload(path, blob, { contentType: type, upsert: false });
+  if (error) throw error;
+  return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+const extOf = f => (f.name.split(".").pop() || "mp4").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+
+/* ---------- video ---------- */
+function playVid(p) {
+  const v = $("player"); v.src = p.video_url;
+  $("vOverlay").classList.remove("hide"); v.play().catch(() => {});
 }
 $("vClose").onclick = () => { const v = $("player"); v.pause(); v.removeAttribute("src"); v.load(); $("vOverlay").classList.add("hide"); };
 
-// Attach video to an existing product
 $("aFile").onchange = async e => {
   const f = e.target.files[0]; if (!f || !target) return;
   if (f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); return; }
-  if (await vput(target.id, f)) { target.hasVid = true; persist(); render(); } else alert("Couldn't save the video.");
+  $("note").textContent = "Uploading video...";
+  try {
+    const url = await upload(f, "vid", extOf(f), f.type);
+    const { error } = await sb.from("products").update({ video_url: url }).eq("id", target.id);
+    if (error) throw error;
+    await loadProducts();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  $("note").textContent = "";
 };
 
-// ---- Add product form ----
-let pending = "", pendingVid = null;
-const openForm = () => {
+/* ---------- add product form ---------- */
+let pendingImg = null, pendingVid = null;
+function openForm() {
   ["fName", "fPrice", "fDesc", "fFile", "fVid"].forEach(id => $(id).value = "");
-  pending = ""; pendingVid = null; $("vName").textContent = ""; $("prev").classList.add("hide");
+  pendingImg = null; pendingVid = null; $("vName").textContent = ""; $("prev").classList.add("hide");
   $("overlay").classList.remove("hide"); $("fName").focus();
-};
-$("addBtn").onclick = $("addBtn2").onclick = openForm;
+}
 $("cancel").onclick = () => $("overlay").classList.add("hide");
 
 $("fFile").onchange = e => {
@@ -225,11 +321,10 @@ $("fFile").onchange = e => {
   r.onload = () => {
     const im = new Image();
     im.onload = () => {
-      const k = Math.min(1, 800 / Math.max(im.width, im.height));
+      const k = Math.min(1, 1000 / Math.max(im.width, im.height));
       const cv = document.createElement("canvas"); cv.width = im.width * k; cv.height = im.height * k;
       cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
-      pending = cv.toDataURL("image/jpeg", 0.8);
-      $("prev").src = pending; $("prev").classList.remove("hide");
+      cv.toBlob(b => { pendingImg = b; $("prev").src = URL.createObjectURL(b); $("prev").classList.remove("hide"); }, "image/jpeg", 0.85);
     };
     im.src = r.result;
   };
@@ -244,14 +339,19 @@ $("fVid").onchange = e => {
 $("save").onclick = async () => {
   const name = $("fName").value.trim(), raw = $("fPrice").value.replace(/[₱,\s]/g, "");
   if (!name || !raw || isNaN(raw)) { alert("Enter a name and a price in ₱ (numbers only)."); return; }
-  const p = { id: uid(), name, price: raw, desc: $("fDesc").value.trim(), image: pending, hasVid: false };
-  if (pendingVid) { if (await vput(p.id, pendingVid)) p.hasVid = true; else alert("Couldn't save the video."); }
-  PRODUCTS.push(p);
-  if (!persist()) { PRODUCTS.pop(); vdel(p.id); alert("Storage is full. Try a smaller picture or delete a product."); return; }
-  s = PRODUCTS.length - 1; $("overlay").classList.add("hide"); render();
+  const btn = $("save"); btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    const image_url = pendingImg ? await upload(pendingImg, "img", "jpg", "image/jpeg") : null;
+    const video_url = pendingVid ? await upload(pendingVid, "vid", extOf(pendingVid), pendingVid.type) : null;
+    const { error } = await sb.from("products").insert({ name, price: Number(raw), descr: $("fDesc").value.trim(), image_url, video_url });
+    if (error) throw error;
+    $("overlay").classList.add("hide");
+    await loadProducts(); s = PRODUCTS.length - 1; showProduct();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = "Save";
 };
-render();
+
+renderHeader(); render(); loadProducts();
 </script>
 </body>
 </html>
-  
