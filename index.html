@@ -725,7 +725,7 @@ async function resolveOwner(u) {
   if (!u) return { id: me.id, name: myName() };
   const { data, error } = await sb.from("profiles").select("*").eq("email", u + "@" + LOGIN_DOMAIN).maybeSingle();
   if (error || !data) throw new Error("User '" + u + "' not found.");
-  if (!["staff", "owner"].includes(data.role)) throw new Error("'" + u + "' is not an approved staff yet. Approve them first in Users.");
+  if (!["buyer", "staff", "owner"].includes(data.role)) throw new Error("'" + u + "' is not approved yet.");
   return { id: data.id, name: data.display_name || uname(data.email) };
 }
 function linkify(el, text) {
