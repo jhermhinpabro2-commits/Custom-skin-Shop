@@ -49,3 +49,209 @@ header .btn{display:inline-block}
 .pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
 .fn{font-size:12px;color:var(--muted);text-align:center}
 .row{display:flex;gap:8px}.row .btn{flex:1}
+  #prev{max-height:140px;border-radius:8px;object-fit:cover;width:100%}
+#vbox{max-width:640px;padding:10px;background:#000}
+#vbox video{width:100%;max-height:70vh;border-radius:8px;background:#000}
+@media (max-width:560px){.show{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><b>🛒 My Shop</b><button class="btn" id="addBtn">+ Add Product</button></header>
+<main>
+  <div class="empty" id="empty">
+    <div style="font-size:40px">📦</div>
+    <div>No products yet.</div>
+    <button class="btn" id="addBtn2">+ Add your first product</button>
+  </div>
+
+  <section class="show hide" id="show">
+    <img id="sImg" alt="">
+    <div class="sinfo">
+      <span class="tag">⭐ FEATURED</span>
+      <h2 id="sName"></h2>
+      <p id="sDesc"></p>
+      <div class="price" id="sPrice"></div>
+      <div class="acts" id="sActs"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- Add product form -->
+<div class="overlay hide" id="overlay">
+  <div class="modal">
+    <h3>Add Product</h3>
+    <label class="f">Name<input type="text" id="fName" maxlength="40" placeholder="Product name"></label>
+    <label class="f">Price (PHP)<div class="money">₱<input type="text" id="fPrice" inputmode="decimal" maxlength="10" placeholder="0.00"></div></label>
+    <label class="f">Description<textarea id="fDesc" rows="2" maxlength="120" placeholder="Short description (optional)"></textarea></label>
+    <label class="pick" for="fFile">📷 Choose Picture</label>
+    <input class="vh" id="fFile" type="file" accept="image/*">
+    <img id="prev" class="hide" alt="">
+    <label class="pick" for="fVid">🎬 Choose Showcase Video (optional)</label>
+    <input class="vh" id="fVid" type="file" accept="video/*">
+    <div class="fn" id="vName"></div>
+    <div class="row"><button class="btn ghost" id="cancel">Cancel</button><button class="btn" id="save">Save</button></div>
+  </div>
+</div>
+
+<!-- Video player -->
+<div class="overlay hide" id="vOverlay">
+  <div class="modal" id="vbox">
+    <video id="player" controls playsinline></video>
+    <button class="btn ghost" id="vClose">Close</button>
+  </div>
+</div>
+<input class="vh" id="aFile" type="file" accept="video/*">
+
+<script>
+/* ===== CONFIG ===== */
+const DISCORD_LINK = "https://discord.gg/h2UdtPMgr";
+// For public buyers use an invite instead: "https://discord.gg/yourcode"
+const MAX_VIDEO_MB = 200;
+/* ================== */
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const KEY = "shop_products_v1";
+let PRODUCTS = [];
+try { PRODUCTS = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
+PRODUCTS.forEach(p => { if (!p.id) p.id = uid(); });
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(PRODUCTS)); return true; } catch (e) { return false; } };
+
+// Philippine peso display
+const peso = v => /^[\d.,\s]+$/.test(String(v)) ? "₱" + Number(String(v).replace(/[,\s]/g, "")).toLocaleString("en-PH", {minimumFractionDigits: 0, maximumFractionDigits: 2}) : v;
+
+// Videos are stored in IndexedDB (bigger than localStorage)
+const dbp = new Promise(res => { try { const r = indexedDB.open("shopdb", 1); r.onupgradeneeded = () => r.result.createObjectStore("vid"); r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch (e) { res(null); } });
+const vput = async (id, blob) => { const d = await dbp; if (!d) return false; return new Promise(r => { const t = d.transaction("vid", "readwrite"); t.objectStore("vid").put(blob, id); t.oncomplete = () => r(true); t.onerror = () => r(false); }); };
+const vget = async id => { const d = await dbp; if (!d) return null; return new Promise(r => { const q = d.transaction("vid").objectStore("vid").get(id); q.onsuccess = () => r(q.result || null); q.onerror = () => r(null); }); };
+const vdel = async id => { const d = await dbp; if (d) d.transaction("vid", "readwrite").objectStore("vid").delete(id); };
+
+const ph = (t, h) => "data:image/svg+xml;utf8," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450"><defs><linearGradient id="g"><stop offset="0" stop-color="hsl(${h},70%,45%)"/><stop offset="1" stop-color="hsl(${h+60},70%,30%)"/></linearGradient></defs><rect width="600" height="450" fill="url(#g)"/><text x="300" y="235" font-size="48" font-family="sans-serif" fill="#fff" text-anchor="middle">${t.replace(/[<>&]/g, "")}</text></svg>`);
+const pic = (p, i) => p.image || ph(p.name, 20 + i * 70);
+
+function buyLink() {
+  const a = document.createElement("a");
+  a.className = "btn"; a.textContent = "BUY"; a.href = DISCORD_LINK; a.target = "_blank"; a.rel = "noopener";
+  return a;
+}
+// Button above BUY: play showcase video, or add one
+function vidBtn(p) {
+  const b = document.createElement("button");
+  b.className = "btn ghost";
+  if (p.hasVid) { b.textContent = "▶ Showcase"; b.onclick = () => playVid(p); }
+  else { b.textContent = "🎬 Add Showcase Video"; b.onclick = () => { target = p; $("aFile").value = ""; $("aFile").click(); }; }
+  return b;
+}
+
+let s = 0, target = null;
+function render() {
+  const has = PRODUCTS.length > 0;
+  $("empty").classList.toggle("hide", has);
+  $("show").classList.toggle("hide", !has);
+  $("grid").innerHTML = ""; $("dots").innerHTML = "";
+  if (!has) return;
+  if (s >= PRODUCTS.length) s = 0;
+  PRODUCTS.forEach((p, i) => {
+    const d = document.createElement("button");
+    d.className = "dot"; d.setAttribute("aria-label", "Show " + p.name);
+    d.onclick = () => { s = i; showProduct(); };
+    $("dots").appendChild(d);
+
+    const c = document.createElement("div"); c.className = "card";
+    const img = document.createElement("img"); img.src = pic(p, i); img.alt = p.name;
+    img.onclick = () => { s = i; showProduct(); window.scrollTo({top: 0, behavior: "smooth"}); };
+    const info = document.createElement("div"); info.className = "info";
+    const n = document.createElement("div"); n.className = "name"; n.textContent = p.name;
+    const pr = document.createElement("div"); pr.className = "price"; pr.textContent = peso(p.price);
+    const acts = document.createElement("div"); acts.className = "acts"; acts.append(vidBtn(p), buyLink());
+    const del = document.createElement("button"); del.className = "del"; del.textContent = "✕"; del.title = "Delete";
+    del.onclick = () => { if (confirm("Delete " + p.name + "?")) { vdel(p.id); PRODUCTS.splice(i, 1); persist(); render(); } };
+    info.append(n, pr, acts); c.append(img, info, del); $("grid").appendChild(c);
+  });
+  showProduct();
+}
+function showProduct() {
+  const p = PRODUCTS[s]; if (!p) return;
+  $("sImg").src = pic(p, s);
+  $("sName").textContent = p.name;
+  $("sDesc").textContent = p.desc || "";
+  $("sPrice").textContent = peso(p.price);
+  $("sActs").replaceChildren(vidBtn(p), buyLink());
+  [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i === s));
+}
+const modalOpen = () => !$("overlay").classList.contains("hide") || !$("vOverlay").classList.contains("hide");
+setInterval(() => { if (PRODUCTS.length > 1 && !modalOpen()) { s = (s + 1) % PRODUCTS.length; showProduct(); } }, 5000);
+
+// ---- Video player ----
+async function playVid(p) {
+  const blob = await vget(p.id);
+  if (!blob) { alert("Video not found. Add it again."); p.hasVid = false; persist(); render(); return; }
+  const v = $("player");
+  let tried = false;
+  v.onerror = () => { // fallback if blob: URLs are blocked
+    if (tried) return; tried = true;
+    const r = new FileReader(); r.onload = () => { v.src = r.result; v.play().catch(() => {}); }; r.readAsDataURL(blob);
+  };
+  v.src = URL.createObjectURL(blob);
+  $("vOverlay").classList.remove("hide");
+  v.play().catch(() => {});
+}
+$("vClose").onclick = () => { const v = $("player"); v.pause(); v.removeAttribute("src"); v.load(); $("vOverlay").classList.add("hide"); };
+
+// Attach video to an existing product
+$("aFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f || !target) return;
+  if (f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); return; }
+  if (await vput(target.id, f)) { target.hasVid = true; persist(); render(); } else alert("Couldn't save the video.");
+};
+
+// ---- Add product form ----
+let pending = "", pendingVid = null;
+const openForm = () => {
+  ["fName", "fPrice", "fDesc", "fFile", "fVid"].forEach(id => $(id).value = "");
+  pending = ""; pendingVid = null; $("vName").textContent = ""; $("prev").classList.add("hide");
+  $("overlay").classList.remove("hide"); $("fName").focus();
+};
+$("addBtn").onclick = $("addBtn2").onclick = openForm;
+$("cancel").onclick = () => $("overlay").classList.add("hide");
+
+$("fFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 800 / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas"); cv.width = im.width * k; cv.height = im.height * k;
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      pending = cv.toDataURL("image/jpeg", 0.8);
+      $("prev").src = pending; $("prev").classList.remove("hide");
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(f);
+};
+$("fVid").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); e.target.value = ""; return; }
+  pendingVid = f; $("vName").textContent = "🎬 " + f.name;
+};
+
+$("save").onclick = async () => {
+  const name = $("fName").value.trim(), raw = $("fPrice").value.replace(/[₱,\s]/g, "");
+  if (!name || !raw || isNaN(raw)) { alert("Enter a name and a price in ₱ (numbers only)."); return; }
+  const p = { id: uid(), name, price: raw, desc: $("fDesc").value.trim(), image: pending, hasVid: false };
+  if (pendingVid) { if (await vput(p.id, pendingVid)) p.hasVid = true; else alert("Couldn't save the video."); }
+  PRODUCTS.push(p);
+  if (!persist()) { PRODUCTS.pop(); vdel(p.id); alert("Storage is full. Try a smaller picture or delete a product."); return; }
+  s = PRODUCTS.length - 1; $("overlay").classList.add("hide"); render();
+};
+render();
+</script>
+</body>
+</html>
+  
