@@ -120,7 +120,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </style>
 </head>
 <body>
-<header><b>🛒 My Shop</b><div id="hdr"></div></header>
+<header><b>🛒 ValkCSahop - Jher </b><div id="hdr"></div></header>
 <main>
   <div class="note" id="note"></div>
   <div class="empty" id="empty">
@@ -368,9 +368,9 @@ function renderHeader() {
   h.append(mk("✅ See Vouched", "btn ghost", openVouches));
   if (!me) { h.append(mk("Login / Sign up", "btn ghost", () => { setMode("login"); $("loginBox").classList.remove("hide"); })); return; }
   const badge = document.createElement("span"); badge.className = "badge";
-  badge.textContent = role === "pending" ? "Waiting for approval" : myName() + " · " + role.toUpperCase();
+  badge.textContent = role === "pending" ? "MEMBER" : role.toUpperCase(); ? "Waiting for approval" : myName() + " · " + role.toUpperCase();
   if (prof && prof.avatar_url) { const a = document.createElement("img"); a.className = "av"; a.src = prof.avatar_url; a.alt = "me"; a.onclick = openProfile; h.append(a); }
-  h.append(badge);
+  h.append(badge);h.append(mk("💬 Chats", "btn ghost", openChats));
   h.append(mk("👤 Profile", "btn ghost", openProfile));
   if (canChat()) h.append(mk("💬 Messages", "btn", openInbox));
   if (isStaff()) h.append(mk("+ Add Vouch", "btn", openAddVouch));
@@ -379,6 +379,7 @@ function renderHeader() {
   if (role === "owner") h.append(mk("🗂 Chat Logs", "btn ghost", openChatLogs));
   if (role === "owner") h.append(mk("📜 Activity", "btn ghost", openLogs));
   h.append(mk("Logout", "btn ghost", async () => { await log("Logged out"); sb.auth.signOut(); }));
+  h.append(mk("🔍 Users", "btn ghost", openSearch));
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
 
