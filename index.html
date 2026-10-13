@@ -769,7 +769,9 @@ function openSeller(p) {
   $("slNm").textContent = sellerName(p);
   $("slRole").textContent = x ? "@" + uname(x.email) + " · " + x.role : "";
   $("slBio").textContent = (x && x.bio) || "";
+  <div id="slId" style="font-size:12px;opacity:.7;word-break:break-all"></div>
   $("slBox").classList.remove("hide");
+  $("slId").textContent = "User ID: " + p.seller_id;
 }
 $("slClose").onclick = () => $("slBox").classList.add("hide");
 
@@ -779,6 +781,7 @@ function openProfile() {
   pendingAvatar = null; $("pFile").value = "";
   $("pPrev").src = (prof && prof.avatar_url) || ph(uname(me.email).slice(0, 8), 0);
   $("pUser").textContent = "Username: " + uname(me.email) + " · " + role;
+  <div id="pId" style="font-size:12px;opacity:.7;word-break:break-all;margin-top:4px;cursor:pointer" title="Tap to copy"></div>
   $("pId").textContent = "User ID: " + me.id;
   $("pId").onclick = () => {
   navigator.clipboard.writeText(me.id)
