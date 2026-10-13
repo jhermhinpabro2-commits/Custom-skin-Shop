@@ -117,10 +117,15 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 .ic:disabled{opacity:.5}
 .ro{text-align:center;color:var(--muted);font-size:12px;padding:12px;border-top:1px solid var(--line);background:#0c0c0c}
 @media (max-width:560px){.show{grid-template-columns:1fr}}
+#upAv{width:84px;height:84px;border-radius:50%;object-fit:cover;align-self:center;background:var(--line)}
+#tList{display:flex;flex-direction:column;gap:6px;height:50vh;overflow:auto;padding:4px}
+.dmsg{max-width:80%;padding:8px 10px;border-radius:12px;font-size:14px;word-break:break-word}
+.dmsg.me{align-self:flex-end;background:var(--accent);color:#fff}
+.dmsg.them{align-self:flex-start;background:var(--line)}
 </style>
 </head>
 <body>
-<header><b>🛒 ValkCSahop - Jher </b><div id="hdr"></div></header>
+<header><b>🛒 ValkCSshop - Jher </b><div id="hdr"></div></header>
 <main>
   <div class="note" id="note"></div>
   <div class="empty" id="empty">
@@ -294,7 +299,49 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="row"><button class="btn ghost" id="pCancel">Cancel</button><button class="btn" id="pSave">Save</button></div>
   </div>
 </div>
+  
+<!-- Search users -->
+<div class="overlay hide" id="searchBox">
+  <div class="modal">
+    <h3>🔍 Search Users</h3>
+    <input type="text" id="uQ" placeholder="Type a username..." autocapitalize="none" autocorrect="off" style="font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%">
+    <div id="uList"></div>
+    <button class="btn ghost" id="searchClose">Close</button>
+  </div>
+</div>
 
+<!-- User profile (view) -->
+<div class="overlay hide" id="userBox">
+  <div class="modal">
+    <img id="upAv" alt="">
+    <h3 id="upName" style="text-align:center;margin:0"></h3>
+    <div style="text-align:center"><span class="badge" id="upRole"></span> <span class="fn" id="upCount"></span></div>
+    <p id="upBio" style="margin:0;text-align:center;color:var(--muted);white-space:pre-wrap"></p>
+    <div id="upActs" class="acts" style="margin-top:0"></div>
+    <div id="upVouches" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn ghost" id="upBack">Back</button>
+  </div>
+</div>
+
+<!-- DM chats list -->
+<div class="overlay hide" id="dmListBox">
+  <div class="modal">
+    <h3>💬 Chats</h3>
+    <div id="cList"></div>
+    <button class="btn ghost" id="chatsClose">Close</button>
+  </div>
+</div>
+
+<!-- DM thread -->
+<div class="overlay hide" id="threadBox">
+  <div class="modal">
+    <h3 id="tName"></h3>
+    <div id="tList"></div>
+    <textarea id="tMsg" rows="2" maxlength="500" placeholder="Type a message..." style="font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%"></textarea>
+    <div class="row"><button class="btn ghost" id="tClose">Close</button><button class="btn" id="tSend">Send</button></div>
+  </div>
+</div>
+  
 <!-- Activity Logs (owner only) -->
 <div class="overlay hide" id="logBox">
   <div class="modal wide">
@@ -305,6 +352,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
+  
 /* ===== CONFIG (edit these) ===== */
 const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0";
@@ -1040,7 +1088,105 @@ $("pSave").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   finally { btn.disabled = false; btn.textContent = "Save"; }
 };
+/* ---------- search users + profile + DM ---------- */
+const roleLabel = r => r === "owner" ? "Owner" : r === "staff" ? "Staff" : "Buyer";
+const dispName = u => u.display_name || u.username;
+function openSearch() { $("searchBox").classList.remove("hide"); $("uQ").value = ""; runSearch(); $("uQ").focus(); }
+async function runSearch() {
+  const q = $("uQ").value.trim().replace(/[%,]/g, "");
+  const list = $("uList"); list.textContent = "Searching...";
+  let query = sb.from("public_profiles").select("*").order("username").limit(20);
+  if (q) query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%`);
+  const { data, error } = await query;
+  if (error) { list.textContent = error.message; return; }
+  list.replaceChildren();
+  if (!data.length) { list.textContent = "No users found."; return; }
+  data.forEach(u => {
+    const r = document.createElement("div"); r.className = "mem";
+    const t = document.createElement("span"); t.textContent = dispName(u) + " · " + roleLabel(u.role);
+    r.append(t, mk("View", "btn", () => openUserProfile(u)));
+    list.append(r);
+  });
+}
+let sTimer;
+$("uQ").oninput = () => { clearTimeout(sTimer); sTimer = setTimeout(runSearch, 300); };
+$("searchClose").onclick = () => $("searchBox").classList.add("hide");
 
+async function openUserProfile(u) {
+  $("searchBox").classList.add("hide"); $("userBox").classList.remove("hide");
+  $("upAv").src = u.avatar_url || ph(u.username.slice(0, 8), 0);
+  $("upName").textContent = dispName(u);
+  $("upRole").textContent = "@" + u.username + " · " + roleLabel(u.role);
+  $("upBio").textContent = u.bio || "";
+  const acts = $("upActs"); acts.replaceChildren();
+  if (me && me.id !== u.id) acts.append(mk("💬 Message", "btn", () => { $("userBox").classList.add("hide"); openThread(u); }));
+  else if (!me) { const n = document.createElement("div"); n.className = "fn"; n.textContent = "Login to message this user."; acts.append(n); }
+  const list = $("upVouches"); list.textContent = "Loading...";
+  const { data } = await sb.from("vouches").select("*").eq("user_id", u.id).order("created_at", { ascending: false });
+  const v = data || [];
+  $("upCount").textContent = v.length + " vouch" + (v.length === 1 ? "" : "es") + " posted";
+  list.replaceChildren();
+  v.forEach(x => {
+    const c = document.createElement("div"); c.className = "vcard";
+    const m = document.createElement("p"); m.textContent = x.message;
+    const d = document.createElement("small"); d.textContent = new Date(x.created_at).toLocaleString("en-PH");
+    c.append(m, d); list.append(c);
+  });
+}
+$("upBack").onclick = () => { $("userBox").classList.add("hide"); $("searchBox").classList.remove("hide"); };
+
+let peer = null, threadTimer = null;
+async function openChats() {
+  if (!me) return;
+  $("dmListBox").classList.remove("hide");
+  const list = $("cList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("dm_messages").select("*").order("created_at", { ascending: false }).limit(200);
+  if (error) { list.textContent = error.message; return; }
+  const last = new Map();
+  data.forEach(m => { const pid = m.sender_id === me.id ? m.receiver_id : m.sender_id; if (!last.has(pid)) last.set(pid, m); });
+  if (!last.size) { list.textContent = "No chats yet. Use 🔍 Users to start one."; return; }
+  const { data: us } = await sb.from("public_profiles").select("*").in("id", [...last.keys()]);
+  list.replaceChildren();
+  (us || []).forEach(u => {
+    const r = document.createElement("div"); r.className = "mem";
+    const t = document.createElement("span"); t.textContent = dispName(u) + ": " + last.get(u.id).body;
+    r.append(t, mk("Open", "btn", () => { $("dmListBox").classList.add("hide"); openThread(u); }));
+    list.append(r);
+  });
+}
+$("chatsClose").onclick = () => $("dmListBox").classList.add("hide");
+
+function openThread(u) {
+  if (!me) { alert("Login first to message."); return; }
+  peer = u; $("tName").textContent = "💬 " + dispName(u); $("tList").replaceChildren(); $("tMsg").value = "";
+  $("threadBox").classList.remove("hide");
+  loadThread(true); clearInterval(threadTimer); threadTimer = setInterval(() => loadThread(false), 4000);
+}
+async function loadThread(first) {
+  if (!me || !peer) return;
+  const { data, error } = await sb.from("dm_messages").select("*")
+    .or(`and(sender_id.eq.${me.id},receiver_id.eq.${peer.id}),and(sender_id.eq.${peer.id},receiver_id.eq.${me.id})`)
+    .order("created_at").limit(200);
+  if (error) return;
+  const box = $("tList");
+  const atBottom = first || box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  box.replaceChildren();
+  data.forEach(m => {
+    const d = document.createElement("div");
+    d.className = "dmsg " + (m.sender_id === me.id ? "me" : "them"); d.textContent = m.body;
+    box.append(d);
+  });
+  if (atBottom) box.scrollTop = box.scrollHeight;
+}
+$("tSend").onclick = async () => {
+  const body = $("tMsg").value.trim(); if (!body || !peer) return;
+  $("tSend").disabled = true;
+  const { error } = await sb.from("dm_messages").insert({ sender_id: me.id, receiver_id: peer.id, body });
+  $("tSend").disabled = false;
+  if (error) { alert(error.message); return; }
+  $("tMsg").value = ""; loadThread(true);
+};
+$("tClose").onclick = () => { clearInterval(threadTimer); peer = null; $("threadBox").classList.add("hide"); };
 setMode("login");
 renderHeader(); render(); loadProducts(); refreshAuth();
 </script>
