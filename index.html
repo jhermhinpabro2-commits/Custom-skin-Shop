@@ -779,6 +779,12 @@ function openProfile() {
   pendingAvatar = null; $("pFile").value = "";
   $("pPrev").src = (prof && prof.avatar_url) || ph(uname(me.email).slice(0, 8), 0);
   $("pUser").textContent = "Username: " + uname(me.email) + " · " + role;
+  $("pId").textContent = "User ID: " + me.id;
+  $("pId").onclick = () => {
+  navigator.clipboard.writeText(me.id)
+    .then(() => alert("User ID copied!"))
+    .catch(() => {});
+};
   $("pName").value = (prof && prof.display_name) || "";
   $("pBio").value = (prof && prof.bio) || "";
   $("pPass").value = "";
