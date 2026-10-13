@@ -49,7 +49,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 30px}
 .modal input[type=text],.modal input[type=email],.modal input[type=password],.modal textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%}
 .money{display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding-left:10px;color:var(--text);font-weight:700}
 .money input{border:0!important;background:transparent!important;flex:1}
-  pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
+  .pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
 .fn{font-size:12px;color:var(--muted);text-align:center}
 .row{display:flex;gap:8px}.row .btn{flex:1}
 .mem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
@@ -85,13 +85,15 @@ main{max-width:900px;margin:0 auto;padding:0 14px 30px}
   <div class="grid" id="grid"></div>
 </main>
 
-<!-- Login -->
+<!-- Login / Apply -->
 <div class="overlay hide" id="loginBox">
   <div class="modal">
-    <h3>Owner / Staff Login</h3>
+    <h3 id="lTitle">Owner / Staff Login</h3>
     <label class="f">Username<input type="text" id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off"></label>
     <label class="f">Password<input type="password" id="lPass" autocomplete="current-password"></label>
+    <label class="f hide" id="lPass2Wrap">Confirm Password<input type="password" id="lPass2" autocomplete="new-password"></label>
     <button class="btn" id="doLogin">Login</button>
+    <button class="btn ghost" id="lSwitch">Apply as Staff</button>
     <button class="btn ghost" id="lCancel">Cancel</button>
   </div>
 </div>
@@ -134,11 +136,11 @@ main{max-width:900px;margin:0 auto;padding:0 14px 30px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CONFIG (edit these) ===== */
-const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";    // Supabase > Project Settings > API > Project URL
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0"; // same page > anon / publishable key (safe to be public)
+const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0";
 const DISCORD_LINK = "https://discord.gg/sbCZm6q6M";
 const MAX_VIDEO_MB = 50;
-const LOGIN_DOMAIN = "@staff.com";           // hidden: username "juan" is stored as juan@shopstaff.com (no real email needed)                        // Supabase free plan limit per file
+const LOGIN_DOMAIN = "shopstaff.com"; // hidden: username "juan" becomes juan@shopstaff.com (no "@" here!)
 /* =============================== */
 
 const $ = id => document.getElementById(id);
@@ -147,12 +149,9 @@ const ph = (t, h) => "data:image/svg+xml;utf8," + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450"><defs><linearGradient id="g"><stop offset="0" stop-color="hsl(${h},70%,45%)"/><stop offset="1" stop-color="hsl(${h+60},70%,30%)"/></linearGradient></defs><rect width="600" height="450" fill="url(#g)"/><text x="300" y="235" font-size="48" font-family="sans-serif" fill="#fff" text-anchor="middle">${t.replace(/[<>&]/g, "")}</text></svg>`);
 const pic = (p, i) => p.image_url || ph(p.name, 20 + i * 70);
 
-if (SUPABASE_URL.startsWith("YOUR_")) {
-  $("note").textContent = "⚠️ Setup needed: put your Supabase URL and key in the CONFIG section.";
-}
-const sb = supabase.createClient(SUPABASE_URL.startsWith("YOUR_") ? "https://example.supabase.co" : SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let me = null, role = null, PRODUCTS = [], s = 0, target = null;
+let me = null, role = null, PRODUCTS = [], s = 0, target = null, applyMode = false;
 const isStaff = () => role === "owner" || role === "staff";
 
 /* ---------- auth + header ---------- */
@@ -160,7 +159,11 @@ async function refreshAuth() {
   const { data: { session } } = await sb.auth.getSession();
   me = session ? session.user : null; role = null;
   if (me) {
-    const { data } = await sb.from("profiles").select("role").eq("id", me.id).maybeSingle();
+    let { data } = await sb.from("profiles").select("role").eq("id", me.id).maybeSingle();
+    if (!data) { // new applicant with no profile row yet: create it as pending
+      await sb.from("profiles").insert({ id: me.id, email: me.email, role: "pending" });
+      ({ data } = await sb.from("profiles").select("role").eq("id", me.id).maybeSingle());
+    }
     role = data ? data.role : "pending";
   }
   renderHeader(); render();
@@ -168,7 +171,7 @@ async function refreshAuth() {
 function mk(text, cls, fn) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = fn; return b; }
 function renderHeader() {
   const h = $("hdr"); h.replaceChildren();
-  if (!me) { h.append(mk("Staff Login", "btn ghost", () => $("loginBox").classList.remove("hide"))); return; }
+  if (!me) { h.append(mk("Staff Login", "btn ghost", () => { setMode(false); $("loginBox").classList.remove("hide"); })); return; }
   const badge = document.createElement("span"); badge.className = "badge";
   badge.textContent = role === "pending" ? "Waiting for approval" : role.toUpperCase();
   h.append(badge);
@@ -178,16 +181,42 @@ function renderHeader() {
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
 
+function setMode(apply) {
+  applyMode = apply;
+  $("lTitle").textContent = apply ? "Apply as Staff" : "Owner / Staff Login";
+  $("doLogin").textContent = apply ? "Send Application" : "Login";
+  $("lSwitch").textContent = apply ? "Back to Login" : "Apply as Staff";
+  $("lPass2Wrap").classList.toggle("hide", !apply);
+  $("lPass").autocomplete = apply ? "new-password" : "current-password";
+}
+$("lSwitch").onclick = () => setMode(!applyMode);
 $("lCancel").onclick = () => $("loginBox").classList.add("hide");
 const uname = e => (e || "").replace("@" + LOGIN_DOMAIN, "");
+
 $("doLogin").onclick = async () => {
   const user = $("lUser").value.trim().toLowerCase().replace(/\s+/g, "");
+  const pass = $("lPass").value;
   if (!user) { alert("Enter your username."); return; }
-  const { error } = await sb.auth.signInWithPassword({ email: user + "@" + LOGIN_DOMAIN, password: $("lPass").value });
-  if (error) alert("Wrong username or password."); else { $("lPass").value = ""; $("loginBox").classList.add("hide"); }
+  const email = user + "@" + LOGIN_DOMAIN;
+  const btn = $("doLogin"); btn.disabled = true;
+  try {
+    if (applyMode) {
+      if (!/^[a-z0-9_.]{3,20}$/.test(user)) { alert("Username: 3-20 letters/numbers only (_ and . allowed)."); return; }
+      if (pass.length < 6) { alert("Password must be at least 6 characters."); return; }
+      if (pass !== $("lPass2").value) { alert("Passwords don't match."); return; }
+      const { data, error } = await sb.auth.signUp({ email, password: pass });
+      if (error) { alert(error.message.includes("already") ? "Username already taken." : error.message); return; }
+      if (!data.session) { alert("Account created, but Supabase still requires email confirmation. Owner: turn it off in Authentication > Providers > Email."); return; }
+      alert("Application sent! Please wait for the owner to approve you.");
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) { alert("Wrong username or password."); return; }
+    }
+    $("lPass").value = ""; $("lPass2").value = ""; $("loginBox").classList.add("hide");
+  } finally { btn.disabled = false; }
 };
 
-/* ---------- staff list (owner) ---------- */
+/* ---------- staff list (owner approves here) ---------- */
 async function openStaff() {
   $("staffBox").classList.remove("hide");
   const list = $("staffList"); list.textContent = "Loading...";
@@ -196,11 +225,13 @@ async function openStaff() {
   list.replaceChildren();
   data.forEach(m => {
     const r = document.createElement("div"); r.className = "mem";
-    const t = document.createElement("span"); t.textContent = uname(m.email) + " · " + (m.role === "pending" ? "removed" : m.role);
+    const t = document.createElement("span");
+    t.textContent = uname(m.email) + " · " + (m.role === "pending" ? "waiting / removed" : m.role);
     r.append(t);
     if (m.role !== "owner") {
       const next = m.role === "staff" ? "pending" : "staff";
-      r.append(mk(m.role === "staff" ? "Remove" : "Add back", "btn", async () => {
+      const label = m.role === "staff" ? "Remove" : "Approve";
+      r.append(mk(label, "btn", async () => {
         const { error: e } = await sb.from("profiles").update({ role: next }).eq("id", m.id);
         if (e) alert(e.message); else openStaff();
       }));
@@ -213,7 +244,7 @@ $("sClose").onclick = () => $("staffBox").classList.add("hide");
 /* ---------- products ---------- */
 async function loadProducts() {
   const { data, error } = await sb.from("products").select("*").order("created_at");
-  if (error) { if (!SUPABASE_URL.startsWith("YOUR_")) $("note").textContent = "Couldn't load products: " + error.message; return; }
+  if (error) { $("note").textContent = "Couldn't load products: " + error.message; return; }
   PRODUCTS = data; render();
 }
 function buyLink() {
@@ -221,7 +252,6 @@ function buyLink() {
   a.className = "btn"; a.textContent = "BUY"; a.href = DISCORD_LINK; a.target = "_blank"; a.rel = "noopener";
   return a;
 }
-// Button above BUY. Buyers: play video (only if there is one). Staff: can also add a video.
 function vidBtn(p) {
   if (p.video_url) return mk("▶ Showcase", "btn ghost", () => playVid(p));
   if (isStaff()) return mk("🎬 Add Showcase Video", "btn ghost", () => { target = p; $("aFile").value = ""; $("aFile").click(); });
@@ -351,7 +381,8 @@ $("save").onclick = async () => {
   btn.disabled = false; btn.textContent = "Save";
 };
 
-renderHeader(); render(); loadProducts();
+renderHeader(); render(); loadProducts(); refreshAuth();
 </script>
 </body>
 </html>
+  
