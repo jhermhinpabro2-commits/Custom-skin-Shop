@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Shop</title>
+<style>
+:root{--bg:#050505;--card:#121212;--text:#f5f5f5;--muted:#a3a3a3;--accent:#e11d2e;--price:#ff4d5a;--line:#2b2b2b;--glow:#e11d2e55;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#2a0408 0,#050505 380px) fixed;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:14px;max-width:900px;margin:0 auto}
+header b{font-size:22px;color:#fff;text-shadow:0 0 12px var(--accent)}
+#hdr{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+main{max-width:900px;margin:0 auto;padding:0 14px 20px}
+.foot{border-top:1px solid var(--accent)!important;text-align:center;color:var(--muted);font-size:13px;padding:14px 14px 28px;border-top:1px solid var(--line);max-width:900px;margin:0 auto}
+.foot b{color:var(--text)}
+.btn{border:0;cursor:pointer;background:var(--accent);color:#fff;font-weight:700;padding:10px 14px;border-radius:10px;font-size:14px;text-decoration:none;display:block;text-align:center;font-family:inherit}
+#hdr .btn{display:inline-block;padding:8px 12px}
+.btn.ghost{background:#1c1c1c;color:var(--text);border:1px solid var(--line)}
+.btn.buy{background:linear-gradient(135deg,#ff2b3d,#a50012);box-shadow:0 0 14px var(--glow);letter-spacing:.3px}
+.btn.buy:active{transform:scale(.98)}
+.btn:disabled{opacity:.6}
+.badge{font-size:11px;font-weight:700;background:var(--line);padding:4px 8px;border-radius:6px}
+.note{color:var(--muted);text-align:center;font-size:13px;padding:6px 0}
+.show{border:2px solid var(--accent);box-shadow:0 0 22px var(--glow);display:grid;grid-template-columns:1.2fr 1fr;background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:18px}
+.show img{width:100%;height:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.sinfo{padding:18px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.sinfo h2{margin:0;font-size:26px}
+.sinfo p{margin:0;color:var(--muted)}
+.tag{align-self:flex-start;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.price{color:var(--price);font-weight:700}
+.by{font-size:12px;color:var(--muted)}
+.acts{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.dots{display:flex;gap:6px;margin-top:6px}
+.dot{width:9px;height:9px;border-radius:50%;border:0;padding:0;background:var(--muted);opacity:.4}
+.dot.on{opacity:1;background:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{border:2px solid var(--accent);box-shadow:0 0 12px var(--glow);position:relative;background:var(--card);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--line);cursor:pointer}
+.info{padding:10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.name{font-weight:700}
+.del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:#000a;color:#fff;cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:60px 16px;border:2px dashed var(--line);border-radius:16px}
+.hide{display:none!important}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal{border:1px solid var(--accent);box-shadow:0 0 24px var(--glow);background:var(--card);width:100%;max-width:400px;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
+.modal h3{margin:0}
+.modal label.f{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%}
+.money{display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding-left:10px;color:var(--text);font-weight:700}
+.money input{border:0!important;background:transparent!important;flex:1}
+.pick{padding:12px;border:2px dashed var(--accent);color:var(--accent);border-radius:10px;font-weight:700;text-align:center;cursor:pointer;font-size:14px}
+.fn{font-size:12px;color:var(--muted);text-align:center}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.mem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.mem span{overflow:hidden;text-overflow:ellipsis}
+.mem .btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+#prev{max-height:140px;border-radius:8px;object-fit:cover;width:100%}
+#vbox{max-width:640px;padding:10px;background:#000}
+#vbox video{width:100%;max-height:70vh;border-radius:8px;background:#000}
+.vcard{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;position:relative}
+.vcard b{font-size:13px;color:var(--accent)}
+.vcard p{margin:0;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.vcard img{width:100%;max-height:220px;object-fit:cover;border-radius:8px;cursor:pointer}
+.vcard small{color:var(--muted);font-size:11px}
+.vcard .vdel{position:absolute;top:6px;right:6px;border:0;background:var(--line);color:var(--text);border-radius:6px;font-size:11px;padding:3px 7px;cursor:pointer}
+#vList{display:flex;flex-direction:column;gap:8px}
+/* inbox + chat + logs */
+.wide{max-width:520px}
+.ib{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;cursor:pointer;font:inherit}
+.ib small{color:var(--muted)}
+#ibList{display:flex;flex-direction:column;gap:8px}
+#msgs{display:flex;flex-direction:column;gap:6px;height:50vh;min-height:200px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px}
+.m{max-width:80%;padding:7px 10px;border-radius:12px;font-size:14px;white-space:pre-wrap;word-break:break-word;background:#262626}
+.m.me{align-self:flex-end;background:var(--accent);color:#fff}
+.m small{display:block;font-size:10px;opacity:.7;margin-top:2px}
+.cbar{display:flex;gap:6px}
+.cbar input{flex:1;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;min-width:0}
+.cbar .btn{padding:9px 14px}
+.lg{font-size:12px;padding:7px 0;border-bottom:1px solid var(--line);word-break:break-word}
+.lg b{color:var(--accent)}
+.lg small{display:block;color:var(--muted)}
+.by.click{cursor:pointer;text-decoration:underline}
+.m a{color:inherit;text-decoration:underline;font-weight:700}
+#slAv{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);align-self:center;background:#222}
+.av{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);cursor:pointer;background:#222}
+#pPrev{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);align-self:center;background:#222}
+@media (max-width:560px){.show{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><b>🛒 My Shop</b><div id="hdr"></div></header>
+<main>
+  <div class="note" id="note"></div>
+  <div class="empty" id="empty">
+    <div style="font-size:40px">📦</div>
+    <div id="emptyMsg">No products yet. Check back soon!</div>
+  </div>
+
+  <section class="show hide" id="show">
+    <img id="sImg" alt="">
+    <div class="sinfo">
+      <span class="tag">⭐ FEATURED</span>
+      <h2 id="sName"></h2>
+      <p id="sDesc"></p>
+      <div class="price" id="sPrice"></div>
+      <div class="by" id="sBy"></div>
+      <div class="acts" id="sActs"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+</main>
+<footer class="foot">Owner: <b>Jher</b></footer>
+
+<!-- Login / Sign up -->
+<div class="overlay hide" id="loginBox">
+  <div class="modal">
+    <h3 id="lTitle">Login</h3>
+    <label class="f">Username<input type="text" id="lUser" autocomplete="username" autocapitalize="none" autocorrect="off"></label>
+    <label class="f">Password<input type="password" id="lPass" autocomplete="current-password"></label>
+    <label class="f hide" id="lPass2Wrap">Confirm Password<input type="password" id="lPass2" autocomplete="new-password"></label>
+    <button class="btn" id="doLogin">Login</button>
+    <button class="btn ghost" id="sw1"></button>
+    <button class="btn ghost" id="sw2"></button>
+    <button class="btn ghost" id="lCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Staff list (owner only) -->
+<div class="overlay hide" id="staffBox">
+  <div class="modal">
+    <h3>Users</h3>
+    <div id="staffList"></div>
+    <button class="btn ghost" id="sClose">Close</button>
+  </div>
+</div>
+
+<!-- Add product -->
+<div class="overlay hide" id="overlay">
+  <div class="modal">
+    <h3>Add Product</h3>
+    <label class="f">Name<input type="text" id="fName" maxlength="40" placeholder="Product name"></label>
+    <label class="f">Price (PHP)<div class="money">₱<input type="text" id="fPrice" inputmode="decimal" maxlength="10" placeholder="0.00"></div></label>
+    <label class="f">Description<textarea id="fDesc" rows="2" maxlength="120" placeholder="Short description (optional)"></textarea></label>
+    <label class="f">Discord link (optional, auto-sent to buyer)<input type="text" id="fDisc" placeholder="https://discord.gg/..." autocapitalize="none" autocorrect="off"></label>
+    <label class="f hide" id="fOwnWrap">Product owner username (blank = you)<input type="text" id="fOwn" placeholder="staff username" autocapitalize="none" autocorrect="off"></label>
+    <label class="pick" for="fFile">📷 Choose Picture</label>
+    <input class="vh" id="fFile" type="file" accept="image/*">
+    <img id="prev" class="hide" alt="">
+    <label class="pick" for="fVid">🎬 Choose Showcase Video (optional)</label>
+    <input class="vh" id="fVid" type="file" accept="video/*">
+    <div class="fn" id="vName"></div>
+    <div class="row"><button class="btn ghost" id="cancel">Cancel</button><button class="btn" id="save">Save</button></div>
+  </div>
+</div>
+
+<!-- See vouches (public) -->
+<div class="overlay hide" id="vouchBox">
+  <div class="modal">
+    <h3>✅ Vouched</h3>
+    <div id="vList"></div>
+    <button class="btn ghost" id="vouchClose">Close</button>
+  </div>
+</div>
+
+<!-- Add vouch (staff/owner) -->
+<div class="overlay hide" id="addVouch">
+  <div class="modal">
+    <h3>Add Vouch</h3>
+    <label class="f">Vouch message<textarea id="vMsg" rows="3" maxlength="300" placeholder="e.g. Legit buyer, smooth transaction!"></textarea></label>
+    <label class="pick" for="vFile">📷 Add Proof Picture (optional)</label>
+    <input class="vh" id="vFile" type="file" accept="image/*">
+    <img id="vPrev" class="hide" alt="" style="max-height:140px;border-radius:8px;object-fit:cover;width:100%">
+    <div class="row"><button class="btn ghost" id="vCancel">Cancel</button><button class="btn" id="vSave">Post Vouch</button></div>
+  </div>
+</div>
+
+<!-- Video player -->
+<div class="overlay hide" id="vOverlay">
+  <div class="modal" id="vbox">
+    <video id="player" controls playsinline></video>
+    <button class="btn ghost" id="vClose">Close</button>
+  </div>
+</div>
+<input class="vh" id="aFile" type="file" accept="video/*">
+
+<!-- Inbox -->
+<div class="overlay hide" id="inboxBox">
+  <div class="modal wide">
+    <h3 id="ibTitle">💬 Messages</h3>
+    <div id="ibList"></div>
+    <button class="btn ghost" id="ibClose">Close</button>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="overlay hide" id="chatBox">
+  <div class="modal wide">
+    <h3 id="cTitle">Chat</h3>
+    <div class="fn" id="cSub"></div>
+    <div id="msgs"></div>
+    <div class="cbar" id="cbar">
+      <input type="text" id="cInput" maxlength="500" placeholder="Type a message...">
+      <button class="btn" id="cSend">Send</button>
+    </div>
+    <button class="btn ghost" id="cClose">Close</button>
+  </div>
+</div>
+
+<!-- Edit product -->
+<div class="overlay hide" id="editBox">
+  <div class="modal">
+    <h3 id="eTitle">Edit Product</h3>
+    <label class="f">Discord link (auto-sent to buyer)<input type="text" id="eDisc" placeholder="https://discord.gg/..." autocapitalize="none" autocorrect="off"></label>
+    <label class="f hide" id="eOwnWrap">Product owner username<input type="text" id="eOwn" placeholder="staff username" autocapitalize="none" autocorrect="off"></label>
+    <div class="row"><button class="btn ghost" id="eCancel">Cancel</button><button class="btn" id="eSave">Save</button></div>
+  </div>
+</div>
+
+<!-- Seller profile -->
+<div class="overlay hide" id="slBox">
+  <div class="modal">
+    <img id="slAv" alt="">
+    <h3 id="slNm" style="text-align:center"></h3>
+    <div class="fn" id="slRole"></div>
+    <p id="slBio" style="margin:0;text-align:center;color:var(--muted);white-space:pre-wrap"></p>
+    <button class="btn ghost" id="slClose">Close</button>
+  </div>
+</div>
+
+<!-- Profile -->
+<div class="overlay hide" id="profBox">
+  <div class="modal">
+    <h3>👤 My Profile</h3>
+    <img id="pPrev" alt="">
+    <label class="pick" for="pFile">📷 Change Picture</label>
+    <input class="vh" id="pFile" type="file" accept="image/*">
+    <div class="fn" id="pUser"></div>
+    <label class="f">Display name<input type="text" id="pName" maxlength="24" placeholder="Display name"></label>
+    <label class="f">Bio<textarea id="pBio" rows="3" maxlength="160" placeholder="About you (optional)"></textarea></label>
+    <label class="f">New password (leave blank to keep)<input type="password" id="pPass" autocomplete="new-password"></label>
+    <div class="row"><button class="btn ghost" id="pCancel">Cancel</button><button class="btn" id="pSave">Save</button></div>
+  </div>
+</div>
+
+<!-- Logs (owner only) -->
+<div class="overlay hide" id="logBox">
+  <div class="modal wide">
+    <h3>📜 Activity Logs</h3>
+    <div id="logList"></div>
+    <div class="row"><button class="btn ghost" id="logRefresh">Refresh</button><button class="btn ghost" id="logClose">Close</button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== CONFIG (edit these) ===== */
+const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0";
+const MAX_VIDEO_MB = 50;
+const LOGIN_DOMAIN = "shopstaff.com"; // hidden: username "juan" becomes juan@shopstaff.com (no "@" here!)
+/* =============================== */
+
+const $ = id => document.getElementById(id);
+const peso = v => "₱" + Number(v).toLocaleString("en-PH", {minimumFractionDigits: 0, maximumFractionDigits: 2});
+const ph = (t, h) => "data:image/svg+xml;utf8," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450"><defs><linearGradient id="g"><stop offset="0" stop-color="hsl(${h},70%,45%)"/><stop offset="1" stop-color="hsl(${h+60},70%,30%)"/></linearGradient></defs><rect width="600" height="450" fill="url(#g)"/><text x="300" y="235" font-size="48" font-family="sans-serif" fill="#fff" text-anchor="middle">${t.replace(/[<>&]/g, "")}</text></svg>`);
+const pic = (p, i) => p.image_url || ph(p.name, 20 + i * 70);
+
+const safeFetch = (url, opts = {}) => {
+  if (opts.headers && typeof opts.headers.forEach === "function" && !(opts.headers.constructor === Object)) {
+    const o = {}; opts.headers.forEach((v, k) => { o[k] = v; }); opts = { ...opts, headers: o };
+  }
+  return fetch(url, opts);
+};
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { global: { fetch: safeFetch } });
+
+let me = null, role = null, PRODUCTS = [], s = 0, target = null, mode = "login";
+let loggedFor = null;
+const isStaff = () => role === "owner" || role === "staff";
+const canChat = () => ["owner", "staff", "buyer"].includes(role);
+const uname = e => (e || "").replace("@" + LOGIN_DOMAIN, "");
+let prof = null, SELLERS = {};
+const myName = () => me ? ((prof && prof.display_name) || uname(me.email)) : "";
+const canManage = p => role === "owner" || (role === "staff" && me && p.seller_id === me.id);
+
+/* ---------- activity log ---------- */
+async function log(action, details) {
+  if (!me) return;
+  try { await sb.from("activity_logs").insert({ user_id: me.id, username: uname(me.email), role, action, details: details || "" }); } catch (e) {}
+}
+
+/* ---------- auth + header ---------- */
+async function refreshAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  me = session ? session.user : null; role = null; prof = null;
+  let created = false;
+  if (me) {
+    let { data } = await sb.from("profiles").select("*").eq("id", me.id).maybeSingle();
+    if (!data) { // new account with no profile row yet
+      const want = (me.user_metadata && me.user_metadata.want) === "staff" ? "pending" : "buyer";
+      await sb.from("profiles").insert({ id: me.id, email: me.email, role: want });
+      ({ data } = await sb.from("profiles").select("*").eq("id", me.id).maybeSingle());
+      created = true;
+    }
+    role = data ? data.role : "buyer"; prof = data;
+    if (loggedFor !== me.id) {
+      loggedFor = me.id;
+      log(created ? "Created account" : "Logged in", created ? "role: " + role : "");
+    }
+  } else { loggedFor = null; }
+  renderHeader(); render();
+}
+function mk(text, cls, fn) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = fn; return b; }
+function renderHeader() {
+  const h = $("hdr"); h.replaceChildren();
+  h.append(mk("✅ See Vouched", "btn ghost", openVouches));
+  if (!me) { h.append(mk("Login / Sign up", "btn ghost", () => { setMode("login"); $("loginBox").classList.remove("hide"); })); return; }
+  const badge = document.createElement("span"); badge.className = "badge";
+  badge.textContent = role === "pending" ? "Waiting for approval" : myName() + " · " + role.toUpperCase();
+  if (prof && prof.avatar_url) { const a = document.createElement("img"); a.className = "av"; a.src = prof.avatar_url; a.alt = "me"; a.onclick = openProfile; h.append(a); }
+  h.append(badge);
+  h.append(mk("👤 Profile", "btn ghost", openProfile));
+  if (canChat()) h.append(mk("💬 Messages", "btn", openInbox));
+  if (isStaff()) h.append(mk("+ Add Vouch", "btn", openAddVouch));
+  if (isStaff()) h.append(mk("+ Add Product", "btn", openForm));
+  if (role === "owner") h.append(mk("Users", "btn ghost", openStaff));
+  if (role === "owner") h.append(mk("📜 Logs", "btn ghost", openLogs));
+  h.append(mk("Logout", "btn ghost", async () => { await log("Logged out"); sb.auth.signOut(); }));
+}
+sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
+
+const MODES = {
+  login: { title: "Login", go: "Login", sw: ["buyer", "staff"] },
+  buyer: { title: "Create Buyer Account", go: "Create Account", sw: ["login", "staff"] },
+  staff: { title: "Apply for Staff", go: "Send Application", sw: ["login", "buyer"] }
+};
+const SWLABEL = { login: "Back to Login", buyer: "Create Buyer Account", staff: "Apply for Staff" };
+function setMode(m) {
+  mode = m;
+  $("lTitle").textContent = MODES[m].title;
+  $("doLogin").textContent = MODES[m].go;
+  $("sw1").textContent = SWLABEL[MODES[m].sw[0]]; $("sw1").onclick = () => setMode(MODES[m].sw[0]);
+  $("sw2").textContent = SWLABEL[MODES[m].sw[1]]; $("sw2").onclick = () => setMode(MODES[m].sw[1]);
+  $("lPass2Wrap").classList.toggle("hide", m === "login");
+  $("lPass").autocomplete = m === "login" ? "current-password" : "new-password";
+}
+$("lCancel").onclick = () => $("loginBox").classList.add("hide");
+
+$("doLogin").onclick = async () => {
+  const user = $("lUser").value.trim().toLowerCase().replace(/\s+/g, "");
+  const pass = $("lPass").value;
+  if (!user) { alert("Enter your username."); return; }
+  const email = user + "@" + LOGIN_DOMAIN;
+  const btn = $("doLogin"); btn.disabled = true;
+  try {
+    if (mode !== "login") {
+      if (!/^[a-z0-9_.]{3,20}$/.test(user)) { alert("Username: 3-20 letters/numbers only (_ and . allowed)."); return; }
+      if (pass.length < 6) { alert("Password must be at least 6 characters."); return; }
+      if (pass !== $("lPass2").value) { alert("Passwords don't match."); return; }
+      const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { want: mode } } });
+      if (error) { alert(error.message.includes("already") ? "Username already taken." : error.message); return; }
+      if (!data.session) { alert("Account created, but Supabase still requires email confirmation. Owner: turn it off in Authentication > Providers > Email."); return; }
+      alert(mode === "staff" ? "Application sent! Please wait for the owner to approve you." : "Account created! You can now message sellers.");
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) { alert("Wrong username or password."); return; }
+    }
+    $("lPass").value = ""; $("lPass2").value = ""; $("loginBox").classList.add("hide");
+  } finally { btn.disabled = false; }
+};
+
+/* ---------- user list (owner approves here) ---------- */
+async function openStaff() {
+  $("staffBox").classList.remove("hide");
+  const list = $("staffList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("profiles").select("*").order("email");
+  if (error) { list.textContent = error.message; return; }
+  list.replaceChildren();
+  data.forEach(m => {
+    const r = document.createElement("div"); r.className = "mem";
+    const t = document.createElement("span");
+    t.textContent = uname(m.email) + " · " + (m.role === "pending" ? "waiting / removed" : m.role);
+    r.append(t);
+    if (m.role === "staff" || m.role === "pending") {
+      const next = m.role === "staff" ? "pending" : "staff";
+      const label = m.role === "staff" ? "Remove" : "Approve";
+      r.append(mk(label, "btn", async () => {
+        const { error: e } = await sb.from("profiles").update({ role: next }).eq("id", m.id);
+        if (e) alert(e.message); else { log(label + " staff", uname(m.email)); openStaff(); }
+      }));
+    }
+    list.append(r);
+  });
+}
+$("sClose").onclick = () => $("staffBox").classList.add("hide");
+
+/* ---------- products ---------- */
+async function loadProducts() {
+  const { data, error } = await sb.from("products").select("*").order("created_at");
+  if (error) { $("note").textContent = "Couldn't load products: " + error.message; return; }
+  PRODUCTS = data; await loadSellers(); render();
+}
+function buyLink(p) { return mk("💬 BUY · Message Seller", "btn buy", () => buy(p)); }
+function vidBtn(p) {
+  if (p.video_url) return mk("▶ Showcase", "btn ghost", () => playVid(p));
+  if (isStaff() && canManage(p)) return mk("🎬 Add Showcase Video", "btn ghost", () => { target = p; $("aFile").value = ""; $("aFile").click(); });
+  return null;
+}
+const editBtn = p => (isStaff() && canManage(p)) ? mk("✏️ Edit (Discord / Owner)", "btn ghost", () => openEdit(p)) : null;
+const acts = p => [vidBtn(p), editBtn(p), buyLink(p)].filter(Boolean);
+
+function render() {
+  const has = PRODUCTS.length > 0;
+  $("empty").classList.toggle("hide", has);
+  $("emptyMsg").textContent = isStaff() ? "No products yet. Tap “+ Add Product” to start." : "No products yet. Check back soon!";
+  $("show").classList.toggle("hide", !has);
+  $("grid").innerHTML = ""; $("dots").innerHTML = "";
+  if (!has) return;
+  if (s >= PRODUCTS.length) s = 0;
+  PRODUCTS.forEach((p, i) => {
+    const d = document.createElement("button");
+    d.className = "dot"; d.setAttribute("aria-label", "Show " + p.name);
+    d.onclick = () => { s = i; showProduct(); };
+    $("dots").appendChild(d);
+
+    const c = document.createElement("div"); c.className = "card";
+    const img = document.createElement("img"); img.src = pic(p, i); img.alt = p.name;
+    img.onclick = () => { s = i; showProduct(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    const info = document.createElement("div"); info.className = "info";
+    const n = document.createElement("div"); n.className = "name"; n.textContent = p.name;
+    const pr = document.createElement("div"); pr.className = "price"; pr.textContent = peso(p.price);
+    const by = document.createElement("div"); by.className = "by"; by.classList.add("click"); by.textContent = "Seller: " + sellerName(p); by.onclick = () => openSeller(p);
+    const a = document.createElement("div"); a.className = "acts"; a.append(...acts(p));
+    info.append(n, pr, by, a); c.append(img, info);
+    if (isStaff() && canManage(p)) c.append(mk("✕", "del", () => delProduct(p)));
+    $("grid").appendChild(c);
+  });
+  showProduct();
+}
+function showProduct() {
+  const p = PRODUCTS[s]; if (!p) return;
+  $("sImg").src = pic(p, s);
+  $("sName").textContent = p.name;
+  $("sDesc").textContent = p.descr || "";
+  $("sPrice").textContent = peso(p.price);
+  $("sBy").textContent = "Seller: " + sellerName(p); $("sBy").classList.add("click"); $("sBy").onclick = () => openSeller(p);
+  $("sActs").replaceChildren(...acts(p));
+  [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i === s));
+}
+const modalOpen = () => document.querySelector(".overlay:not(.hide)") !== null;
+setInterval(() => { if (PRODUCTS.length > 1 && !modalOpen()) { s = (s + 1) % PRODUCTS.length; showProduct(); } }, 5000);
+
+async function delProduct(p) {
+  if (!confirm("Delete " + p.name + "?")) return;
+  const { error } = await sb.from("products").delete().eq("id", p.id);
+  if (error) { alert(error.message); return; }
+  log("Deleted product", p.name);
+  const paths = [p.image_url, p.video_url].filter(Boolean).map(u => decodeURIComponent(u.split("/media/")[1] || "")).filter(Boolean);
+  if (paths.length) sb.storage.from("media").remove(paths);
+  loadProducts();
+}
+
+/* ---------- upload helper ---------- */
+async function upload(blob, folder, ext, type) {
+  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await sb.storage.from("media").upload(path, blob, { contentType: type, upsert: false });
+  if (error) throw error;
+  return sb.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+const extOf = f => (f.name.split(".").pop() || "mp4").toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+
+/* ---------- video ---------- */
+function playVid(p) {
+  const v = $("player"); v.src = p.video_url;
+  $("vOverlay").classList.remove("hide"); v.play().catch(() => {});
+}
+$("vClose").onclick = () => { const v = $("player"); v.pause(); v.removeAttribute("src"); v.load(); $("vOverlay").classList.add("hide"); };
+
+$("aFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f || !target) return;
+  if (f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); return; }
+  $("note").textContent = "Uploading video...";
+  try {
+    const url = await upload(f, "vid", extOf(f), f.type);
+    const { error } = await sb.from("products").update({ video_url: url }).eq("id", target.id);
+    if (error) throw error;
+    log("Added showcase video", target.name);
+    await loadProducts();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  $("note").textContent = "";
+};
+
+/* ---------- add product form ---------- */
+let pendingImg = null, pendingVid = null;
+function openForm() {
+  ["fName", "fPrice", "fDesc", "fDisc", "fOwn", "fFile", "fVid"].forEach(id => $(id).value = "");
+  pendingImg = null; pendingVid = null; $("vName").textContent = ""; $("prev").classList.add("hide"); $("fOwnWrap").classList.toggle("hide", role !== "owner");
+  $("overlay").classList.remove("hide"); $("fName").focus();
+}
+$("cancel").onclick = () => $("overlay").classList.add("hide");
+
+function shrink(file, cb) {
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(im.width, im.height));
+      const cv = document.createElement("canvas"); cv.width = im.width * k; cv.height = im.height * k;
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      cv.toBlob(cb, "image/jpeg", 0.85);
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+$("fFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrink(f, b => { pendingImg = b; $("prev").src = URL.createObjectURL(b); $("prev").classList.remove("hide"); });
+};
+$("fVid").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > MAX_VIDEO_MB * 1048576) { alert("Video too big. Max " + MAX_VIDEO_MB + "MB."); e.target.value = ""; return; }
+  pendingVid = f; $("vName").textContent = "🎬 " + f.name;
+};
+
+$("save").onclick = async () => {
+  const name = $("fName").value.trim(), raw = $("fPrice").value.replace(/[₱,\s]/g, "");
+  if (!name || !raw || isNaN(raw)) { alert("Enter a name and a price in ₱ (numbers only)."); return; }
+  const disc = $("fDisc").value.trim();
+  if (!validDisc(disc)) { alert("Discord link must look like https://discord.gg/xxxx or https://discord.com/invite/xxxx"); return; }
+  const btn = $("save"); btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    const own = role === "owner" ? await resolveOwner($("fOwn").value) : { id: me.id, name: myName() };
+    const image_url = pendingImg ? await upload(pendingImg, "img", "jpg", "image/jpeg") : null;
+    const video_url = pendingVid ? await upload(pendingVid, "vid", extOf(pendingVid), pendingVid.type) : null;
+    const { error } = await sb.from("products").insert({ name, price: Number(raw), descr: $("fDesc").value.trim(), image_url, video_url, discord_link: disc || null, seller_id: own.id, seller_name: own.name });
+    if (error) throw error;
+    log("Added product", name + " (" + peso(raw) + ") owner: " + own.name);
+    $("overlay").classList.add("hide");
+    await loadProducts(); s = PRODUCTS.length - 1; showProduct();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = "Save";
+};
+
+/* ---------- vouches ---------- */
+async function openVouches() {
+  $("vouchBox").classList.remove("hide");
+  const list = $("vList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("vouches").select("*").order("created_at", { ascending: false });
+  if (error) { list.textContent = "Couldn't load vouches: " + error.message; return; }
+  list.replaceChildren();
+  if (!data.length) { list.textContent = "No vouches yet."; return; }
+  data.forEach(v => {
+    const c = document.createElement("div"); c.className = "vcard";
+    const who = document.createElement("b"); who.textContent = "Vouch by " + (v.author || "staff");
+    const msg = document.createElement("p"); msg.textContent = v.message || "";
+    c.append(who, msg);
+    if (v.image_url) {
+      const im = document.createElement("img"); im.src = v.image_url; im.alt = "proof";
+      im.onclick = () => window.open(v.image_url, "_blank");
+      c.append(im);
+    }
+    const d = document.createElement("small"); d.textContent = new Date(v.created_at).toLocaleString("en-PH");
+    c.append(d);
+    if (me && (role === "owner" || v.user_id === me.id)) {
+      c.append(mk("Delete", "vdel", async () => {
+        if (!confirm("Delete this vouch?")) return;
+        const { error: e } = await sb.from("vouches").delete().eq("id", v.id);
+        if (e) alert(e.message); else { log("Deleted vouch", (v.message || "").slice(0, 60)); openVouches(); }
+      }));
+    }
+    list.append(c);
+  });
+}
+$("vouchClose").onclick = () => $("vouchBox").classList.add("hide");
+
+let pendingVouchImg = null;
+function openAddVouch() {
+  $("vMsg").value = ""; $("vFile").value = ""; pendingVouchImg = null; $("vPrev").classList.add("hide");
+  $("addVouch").classList.remove("hide"); $("vMsg").focus();
+}
+$("vCancel").onclick = () => $("addVouch").classList.add("hide");
+$("vFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrink(f, b => { pendingVouchImg = b; $("vPrev").src = URL.createObjectURL(b); $("vPrev").classList.remove("hide"); });
+};
+$("vSave").onclick = async () => {
+  const message = $("vMsg").value.trim();
+  if (!message) { alert("Write a vouch message."); return; }
+  const btn = $("vSave"); btn.disabled = true; btn.textContent = "Posting...";
+  try {
+    const image_url = pendingVouchImg ? await upload(pendingVouchImg, "vouch", "jpg", "image/jpeg") : null;
+    const { error } = await sb.from("vouches").insert({ message, image_url });
+    if (error) throw error;
+    log("Added vouch", message.slice(0, 60));
+    $("addVouch").classList.add("hide");
+    openVouches();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = "Post Vouch";
+};
+
+/* ---------- BUY -> chat with the product's seller ---------- */
+async function buy(p) {
+  if (!me) { setMode("buyer"); $("loginBox").classList.remove("hide"); return; }
+  if (role === "pending") { alert("Hinihintay pa ang approval ng account mo."); return; }
+  if (!p.seller_id) { alert("Walang seller ang product na ito."); return; }
+  if (p.seller_id === me.id) { alert("Ikaw ang seller ng product na ito. Tingnan ang 💬 Messages para sa mga buyer."); return; }
+  let { data: c, error } = await sb.from("conversations").select("*").eq("product_id", p.id).eq("buyer_id", me.id).maybeSingle();
+  if (error) { alert(error.message); return; }
+  if (!c) {
+    const r = await sb.from("conversations").insert({
+      product_id: p.id, product_name: p.name, buyer_id: me.id, buyer_name: myName(),
+      seller_id: p.seller_id, seller_name: sellerName(p)
+    }).select().single();
+    if (r.error) { alert(r.error.message); return; }
+    c = r.data;
+    log("Started chat", "buyer " + myName() + " -> seller " + c.seller_name + " re: " + p.name);
+  }
+  openChat(c);
+}
+
+/* ---------- inbox ---------- */
+function otherParty(c) {
+  if (me.id === c.buyer_id) return "Seller: " + c.seller_name;
+  if (me.id === c.seller_id) return "Buyer: " + c.buyer_name;
+  return c.buyer_name + " ↔ " + c.seller_name;
+}
+async function openInbox() {
+  $("ibTitle").textContent = role === "owner" ? "💬 All Chats (owner view)" : "💬 Messages";
+  $("inboxBox").classList.remove("hide");
+  const list = $("ibList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("conversations").select("*").order("created_at", { ascending: false });
+  if (error) { list.textContent = error.message; return; }
+  list.replaceChildren();
+  if (!data.length) { list.textContent = "No chats yet. Tap BUY on a product to message its seller."; return; }
+  data.forEach(c => {
+    const b = document.createElement("button"); b.className = "ib";
+    const t = document.createElement("b"); t.textContent = c.product_name || "Product";
+    const sm = document.createElement("small"); sm.textContent = otherParty(c);
+    b.append(t, sm); b.onclick = () => openChat(c);
+    list.append(b);
+  });
+}
+$("ibClose").onclick = () => $("inboxBox").classList.add("hide");
+
+/* ---------- chat (refreshes every 4s) ---------- */
+let curConvo = null, poll = null, lastCount = -1;
+function openChat(c) {
+  curConvo = c; lastCount = -1;
+  $("inboxBox").classList.add("hide");
+  $("cTitle").textContent = c.product_name || "Chat";
+  $("cSub").textContent = otherParty(c);
+  const member = me.id === c.buyer_id || me.id === c.seller_id;
+  $("cbar").classList.toggle("hide", !member);
+  $("msgs").replaceChildren();
+  $("chatBox").classList.remove("hide");
+  loadMsgs(); clearInterval(poll); poll = setInterval(loadMsgs, 4000);
+  if (member) $("cInput").focus();
+}
+async function loadMsgs() {
+  if (!curConvo) return;
+  const { data, error } = await sb.from("messages").select("*").eq("convo_id", curConvo.id).order("created_at");
+  if (error || !data || data.length === lastCount) return;
+  lastCount = data.length;
+  const box = $("msgs"); box.replaceChildren();
+  if (!data.length) { const n = document.createElement("div"); n.className = "fn"; n.textContent = "Say hi 👋"; box.append(n); }
+  data.forEach(m => {
+    const d = document.createElement("div"); d.className = "m" + (m.sender_id === me.id ? " me" : "");
+    linkify(d, m.body);
+    const sm = document.createElement("small");
+    sm.textContent = m.sender_name + " · " + new Date(m.created_at).toLocaleString("en-PH", { hour: "numeric", minute: "2-digit", month: "short", day: "numeric" });
+    d.append(sm); box.append(d);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+async function sendMsg() {
+  const body = $("cInput").value.trim(); if (!body || !curConvo) return;
+  const btn = $("cSend"); btn.disabled = true;
+  const { error } = await sb.from("messages").insert({ convo_id: curConvo.id, sender_id: me.id, sender_name: myName(), body });
+  btn.disabled = false;
+  if (error) { alert(error.message); return; }
+  $("cInput").value = "";
+  log("Sent message", myName() + " -> " + (me.id === curConvo.buyer_id ? curConvo.seller_name : curConvo.buyer_name) + " re: " + curConvo.product_name + ": " + body.slice(0, 80));
+  loadMsgs();
+}
+$("cSend").onclick = sendMsg;
+$("cInput").onkeydown = e => { if (e.key === "Enter") sendMsg(); };
+$("cClose").onclick = () => { clearInterval(poll); curConvo = null; $("chatBox").classList.add("hide"); };
+
+/* ---------- logs (owner only) ---------- */
+async function openLogs() {
+  $("logBox").classList.remove("hide");
+  const list = $("logList"); list.textContent = "Loading...";
+  const { data, error } = await sb.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(200);
+  if (error) { list.textContent = error.message; return; }
+  list.replaceChildren();
+  if (!data.length) { list.textContent = "No activity yet."; return; }
+  data.forEach(l => {
+    const d = document.createElement("div"); d.className = "lg";
+    const b = document.createElement("b"); b.textContent = l.username + " (" + l.role + ") ";
+    d.append(b, document.createTextNode(l.action + (l.details ? " — " + l.details : "")));
+    const sm = document.createElement("small"); sm.textContent = new Date(l.created_at).toLocaleString("en-PH");
+    d.append(sm); list.append(d);
+  });
+}
+$("logRefresh").onclick = openLogs;
+$("logClose").onclick = () => $("logBox").classList.add("hide");
+
+/* ---------- sellers / owner assignment / discord ---------- */
+async function loadSellers() {
+  const { data } = await sb.from("profiles").select("id,email,display_name,bio,avatar_url,role").in("role", ["staff", "owner"]);
+  SELLERS = {}; (data || []).forEach(x => SELLERS[x.id] = x);
+}
+function sellerName(p) { const x = SELLERS[p.seller_id]; return x ? (x.display_name || uname(x.email)) : (p.seller_name || "shop"); }
+function sellerUser(p) { const x = SELLERS[p.seller_id]; return x ? uname(x.email) : ""; }
+const validDisc = v => !v || /^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-Za-z0-9_-]+\/?$/i.test(v);
+async function resolveOwner(u) {
+  u = (u || "").trim().toLowerCase().replace(/\s+/g, "");
+  if (!u) return { id: me.id, name: myName() };
+  const { data, error } = await sb.from("profiles").select("*").eq("email", u + "@" + LOGIN_DOMAIN).maybeSingle();
+  if (error || !data) throw new Error("User '" + u + "' not found.");
+  if (!["staff", "owner"].includes(data.role)) throw new Error("'" + u + "' is not an approved staff yet. Approve them first in Users.");
+  return { id: data.id, name: data.display_name || uname(data.email) };
+}
+function linkify(el, text) {
+  text.split(/(https?:\/\/[^\s]+)/g).forEach(part => {
+    if (/^https?:\/\//.test(part)) { const a = document.createElement("a"); a.href = part; a.target = "_blank"; a.rel = "noopener"; a.textContent = part; el.append(a); }
+    else el.append(document.createTextNode(part));
+  });
+}
+let editing = null;
+function openEdit(p) {
+  editing = p;
+  $("eTitle").textContent = "Edit: " + p.name;
+  $("eDisc").value = p.discord_link || "";
+  $("eOwn").value = sellerUser(p);
+  $("eOwnWrap").classList.toggle("hide", role !== "owner");
+  $("editBox").classList.remove("hide");
+}
+$("eCancel").onclick = () => $("editBox").classList.add("hide");
+$("eSave").onclick = async () => {
+  const disc = $("eDisc").value.trim();
+  if (!validDisc(disc)) { alert("Discord link must look like https://discord.gg/xxxx or https://discord.com/invite/xxxx"); return; }
+  const btn = $("eSave"); btn.disabled = true;
+  try {
+    const upd = { discord_link: disc || null };
+    const newOwn = $("eOwn").value.trim().toLowerCase();
+    if (role === "owner" && newOwn && newOwn !== sellerUser(editing)) {
+      const o = await resolveOwner(newOwn); upd.seller_id = o.id; upd.seller_name = o.name;
+    }
+    const { data, error } = await sb.from("products").update(upd).eq("id", editing.id).select();
+    if (error) throw error;
+    if (!data || !data.length) throw new Error("Hindi na-save (walang permission).");
+    log("Edited product", editing.name + (upd.seller_name ? " -> owner " + upd.seller_name : "") + (disc ? " (discord set)" : ""));
+    $("editBox").classList.add("hide");
+    await loadProducts();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  btn.disabled = false;
+};
+function openSeller(p) {
+  const x = SELLERS[p.seller_id];
+  $("slAv").src = (x && x.avatar_url) || ph(sellerName(p).slice(0, 8), 0);
+  $("slNm").textContent = sellerName(p);
+  $("slRole").textContent = x ? "@" + uname(x.email) + " · " + x.role : "";
+  $("slBio").textContent = (x && x.bio) || "";
+  $("slBox").classList.remove("hide");
+}
+$("slClose").onclick = () => $("slBox").classList.add("hide");
+
+/* ---------- profile ---------- */
+let pendingAvatar = null;
+function openProfile() {
+  pendingAvatar = null; $("pFile").value = "";
+  $("pPrev").src = (prof && prof.avatar_url) || ph(uname(me.email).slice(0, 8), 0);
+  $("pUser").textContent = "Username: " + uname(me.email) + " · " + role;
+  $("pName").value = (prof && prof.display_name) || "";
+  $("pBio").value = (prof && prof.bio) || "";
+  $("pPass").value = "";
+  $("profBox").classList.remove("hide");
+}
+$("pCancel").onclick = () => $("profBox").classList.add("hide");
+$("pFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrink(f, b => { pendingAvatar = b; $("pPrev").src = URL.createObjectURL(b); });
+};
+$("pSave").onclick = async () => {
+  const btn = $("pSave"); btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    const upd = { display_name: $("pName").value.trim() || null, bio: $("pBio").value.trim() || null };
+    if (pendingAvatar) upd.avatar_url = await upload(pendingAvatar, "avatar", "jpg", "image/jpeg");
+    const { error } = await sb.from("profiles").update(upd).eq("id", me.id);
+    if (error) throw error;
+    const np = $("pPass").value;
+    if (np) {
+      if (np.length < 6) { alert("Password must be at least 6 characters."); return; }
+      const r = await sb.auth.updateUser({ password: np });
+      if (r.error) throw r.error;
+    }
+    log("Updated profile", upd.display_name || "");
+    if (role === "staff" || role === "owner") { await sb.from("products").update({ seller_name: upd.display_name || uname(me.email) }).eq("seller_id", me.id); loadProducts(); }
+    $("profBox").classList.add("hide");
+    await refreshAuth();
+  } catch (err) { alert("Error: " + (err.message || err)); }
+  finally { btn.disabled = false; btn.textContent = "Save"; }
+};
+
+setMode("login");
+renderHeader(); render(); loadProducts(); refreshAuth();
+</script>
+</body>
+</html>
