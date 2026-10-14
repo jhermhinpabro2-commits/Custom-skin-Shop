@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>My Shop</title>
+<title>ValkCSshop - Jher</title>
 <style>
 :root{--bg:#050505;--card:#121212;--text:#f5f5f5;--muted:#a3a3a3;--accent:#e11d2e;--price:#ff4d5a;--line:#2b2b2b;--glow:#e11d2e55;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -117,6 +117,8 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 .ic:disabled{opacity:.5}
 .ro{text-align:center;color:var(--muted);font-size:12px;padding:12px;border-top:1px solid var(--line);background:#0c0c0c}
 @media (max-width:560px){.show{grid-template-columns:1fr}}
+
+/* ===== Search users / profile view / DM ===== */
 #upAv{width:84px;height:84px;border-radius:50%;object-fit:cover;align-self:center;background:var(--line)}
 #tList{display:flex;flex-direction:column;gap:6px;height:50vh;overflow:auto;padding:4px}
 .dmsg{max-width:80%;padding:8px 10px;border-radius:12px;font-size:14px;word-break:break-word}
@@ -125,7 +127,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </style>
 </head>
 <body>
-<header><b>🛒 ValkCSshop - Jher </b><div id="hdr"></div></header>
+<header><b>🛒 ValkCSshop - Jher</b><div id="hdr"></div></header>
 <main>
   <div class="note" id="note"></div>
   <div class="empty" id="empty">
@@ -222,7 +224,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </div>
 <input class="vh" id="aFile" type="file" accept="video/*">
 
-<!-- Inbox (MY chats only) -->
+<!-- Inbox (MY product chats only) -->
 <div class="overlay hide" id="inboxBox">
   <div class="modal wide">
     <h3>💬 Messages</h3>
@@ -283,7 +285,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
   </div>
 </div>
 
-<!-- Profile -->
+<!-- My Profile -->
 <div class="overlay hide" id="profBox">
   <div class="modal">
     <h3>👤 My Profile</h3>
@@ -299,7 +301,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="row"><button class="btn ghost" id="pCancel">Cancel</button><button class="btn" id="pSave">Save</button></div>
   </div>
 </div>
-  
+
 <!-- Search users -->
 <div class="overlay hide" id="searchBox">
   <div class="modal">
@@ -326,7 +328,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 <!-- DM chats list -->
 <div class="overlay hide" id="dmListBox">
   <div class="modal">
-    <h3>💬 Chats</h3>
+    <h3>✉️ DMs</h3>
     <div id="cList"></div>
     <button class="btn ghost" id="chatsClose">Close</button>
   </div>
@@ -341,7 +343,7 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
     <div class="row"><button class="btn ghost" id="tClose">Close</button><button class="btn" id="tSend">Send</button></div>
   </div>
 </div>
-  
+
 <!-- Activity Logs (owner only) -->
 <div class="overlay hide" id="logBox">
   <div class="modal wide">
@@ -352,7 +354,6 @@ main{max-width:900px;margin:0 auto;padding:0 14px 20px}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
 <script>
-  
 /* ===== CONFIG (edit these) ===== */
 const SUPABASE_URL = "https://bufyclhbcckqvhaiyouc.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZnljbGhiY2NrcXZoYWl5b3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4ODg3NDcsImV4cCI6MjEwNzQ2NDc0N30.CKFOFbtEbtSBmPcf9fDqeFmPxoBfIqWiNTpSxjpGyL0";
@@ -414,20 +415,21 @@ function mk(text, cls, fn) { const b = document.createElement("button"); b.class
 function renderHeader() {
   const h = $("hdr"); h.replaceChildren();
   h.append(mk("✅ See Vouched", "btn ghost", openVouches));
+  h.append(mk("🔍 Users", "btn ghost", openSearch));
   if (!me) { h.append(mk("Login / Sign up", "btn ghost", () => { setMode("login"); $("loginBox").classList.remove("hide"); })); return; }
   const badge = document.createElement("span"); badge.className = "badge";
-  badge.textContent = role === "pending" ? "MEMBER" : role.toUpperCase(); ? "Waiting for approval" : myName() + " · " + role.toUpperCase();
+  badge.textContent = role === "pending" ? "Waiting for approval" : myName() + " · " + role.toUpperCase();
   if (prof && prof.avatar_url) { const a = document.createElement("img"); a.className = "av"; a.src = prof.avatar_url; a.alt = "me"; a.onclick = openProfile; h.append(a); }
-  h.append(badge);h.append(mk("💬 Chats", "btn ghost", openChats));
+  h.append(badge);
   h.append(mk("👤 Profile", "btn ghost", openProfile));
+  h.append(mk("✉️ DMs", "btn ghost", openChats));
   if (canChat()) h.append(mk("💬 Messages", "btn", openInbox));
   if (isStaff()) h.append(mk("+ Add Vouch", "btn", openAddVouch));
   if (isStaff()) h.append(mk("+ Add Product", "btn", openForm));
-  if (role === "owner") h.append(mk("Users", "btn ghost", openStaff));
+  if (role === "owner") h.append(mk("👥 Manage Users", "btn ghost", openStaff));
   if (role === "owner") h.append(mk("🗂 Chat Logs", "btn ghost", openChatLogs));
   if (role === "owner") h.append(mk("📜 Activity", "btn ghost", openLogs));
   h.append(mk("Logout", "btn ghost", async () => { await log("Logged out"); sb.auth.signOut(); }));
-  h.append(mk("🔍 Users", "btn ghost", openSearch));
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
 
@@ -700,7 +702,7 @@ $("vSave").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   btn.disabled = false; btn.textContent = "Post Vouch";
 };
-  
+
 /* ---------- helpers: avatars + profiles cache ---------- */
 const PROFS = {};
 const colorFor = n => { let h = 0; for (const ch of String(n || "?")) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; };
@@ -721,21 +723,22 @@ async function loadProfs(ids) {
   } catch (e) {}
 }
 const isImgUrl = t => /^https?:\/\/\S+\.(jpe?g|png|gif|webp)(\?\S*)?$/i.test(t);
-const isVidUrl = t => /^https?:\/\/\S+\.(mp4|mov|webm|m4v|3gp)(\?\S*)?$/i.test(t);
-function shortTime(d) {
-  const t = new Date(d), n = new Date();
-  if (t.toDateString() === n.toDateString()) return t.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" });
-  return t.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+const isVidUrl = t => /^https?:\/\/\S+\.(mp4|webm|mov|m4v|ogg)(\?\S*)?$/i.test(t);
+function shortTime(iso) {
+  const d = new Date(iso), diff = (Date.now() - d) / 1000;
+  if (diff < 60) return "now";
+  if (diff < 3600) return Math.floor(diff / 60) + "m";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h";
+  if (diff < 604800) return Math.floor(diff / 86400) + "d";
+  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
 }
 
-/* ---------- BUY -> chat with the product's seller ---------- */
+/* ---------- BUY: start a chat with the seller ---------- */
 async function buy(p) {
-  if (!me) { setMode("buyer"); $("loginBox").classList.remove("hide"); return; }
-  if (role === "pending") { alert("Hinihintay pa ang approval ng account mo."); return; }
-  if (!p.seller_id) { alert("Walang seller ang product na ito."); return; }
-  if (p.seller_id === me.id) { alert("Ikaw ang seller ng product na ito. Tingnan ang 💬 Messages para sa mga buyer."); return; }
-  let { data: c, error } = await sb.from("conversations").select("*").eq("product_id", p.id).eq("buyer_id", me.id).maybeSingle();
-  if (error) { alert(error.message); return; }
+  if (!me) { alert("Login or create a buyer account first to message the seller."); setMode("buyer"); $("loginBox").classList.remove("hide"); return; }
+  if (!canChat()) { alert("Your account can't send messages yet."); return; }
+  if (p.seller_id === me.id) { alert("This is your own product."); return; }
+  let { data: c } = await sb.from("conversations").select("*").eq("product_id", p.id).eq("buyer_id", me.id).maybeSingle();
   if (!c) {
     const r = await sb.from("conversations").insert({
       product_id: p.id, product_name: p.name, buyer_id: me.id, buyer_name: myName(),
@@ -747,8 +750,7 @@ async function buy(p) {
   }
   openChat(c, null);
 }
-
-/* ---------- conversations list (shared by Messages + Chat Logs) ---------- */
+  /* ---------- conversations list (shared by Messages + Chat Logs) ---------- */
 async function fetchConvos(onlyMine) {
   let q = sb.from("conversations").select("*");
   if (onlyMine) q = q.or("buyer_id.eq." + me.id + ",seller_id.eq." + me.id);
@@ -788,7 +790,7 @@ function convoItem(c, logMode) {
   return b;
 }
 
-/* ---------- Messages (MY chats only, even for owner) ---------- */
+/* ---------- Messages (MY product chats only, even for owner) ---------- */
 async function openInbox() {
   $("inboxBox").classList.remove("hide");
   const list = $("ibList"); list.textContent = "Loading...";
@@ -1039,7 +1041,6 @@ function openSeller(p) {
   $("slBox").classList.remove("hide");
 }
 $("slClose").onclick = () => $("slBox").classList.add("hide");
-
 /* ---------- my profile ---------- */
 let pendingAvatar = null;
 function openProfile() {
@@ -1088,12 +1089,13 @@ $("pSave").onclick = async () => {
   } catch (err) { alert("Error: " + (err.message || err)); }
   finally { btn.disabled = false; btn.textContent = "Save"; }
 };
-/* ---------- search users + profile + DM ---------- */
+
+/* ---------- search users + profile view ---------- */
 const roleLabel = r => r === "owner" ? "Owner" : r === "staff" ? "Staff" : "Buyer";
 const dispName = u => u.display_name || u.username;
 function openSearch() { $("searchBox").classList.remove("hide"); $("uQ").value = ""; runSearch(); $("uQ").focus(); }
 async function runSearch() {
-  const q = $("uQ").value.trim().replace(/[%,]/g, "");
+  const q = $("uQ").value.trim().replace(/[%,()]/g, "");
   const list = $("uList"); list.textContent = "Searching...";
   let query = sb.from("public_profiles").select("*").order("username").limit(20);
   if (q) query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%`);
@@ -1119,7 +1121,7 @@ async function openUserProfile(u) {
   $("upRole").textContent = "@" + u.username + " · " + roleLabel(u.role);
   $("upBio").textContent = u.bio || "";
   const acts = $("upActs"); acts.replaceChildren();
-  if (me && me.id !== u.id) acts.append(mk("💬 Message", "btn", () => { $("userBox").classList.add("hide"); openThread(u); }));
+  if (me && me.id !== u.id) acts.append(mk("✉️ Send DM", "btn", () => { $("userBox").classList.add("hide"); openThread(u); }));
   else if (!me) { const n = document.createElement("div"); n.className = "fn"; n.textContent = "Login to message this user."; acts.append(n); }
   const list = $("upVouches"); list.textContent = "Loading...";
   const { data } = await sb.from("vouches").select("*").eq("user_id", u.id).order("created_at", { ascending: false });
@@ -1135,6 +1137,7 @@ async function openUserProfile(u) {
 }
 $("upBack").onclick = () => { $("userBox").classList.add("hide"); $("searchBox").classList.remove("hide"); };
 
+/* ---------- DMs (user to user, no product needed) ---------- */
 let peer = null, threadTimer = null;
 async function openChats() {
   if (!me) return;
@@ -1144,7 +1147,7 @@ async function openChats() {
   if (error) { list.textContent = error.message; return; }
   const last = new Map();
   data.forEach(m => { const pid = m.sender_id === me.id ? m.receiver_id : m.sender_id; if (!last.has(pid)) last.set(pid, m); });
-  if (!last.size) { list.textContent = "No chats yet. Use 🔍 Users to start one."; return; }
+  if (!last.size) { list.textContent = "No DMs yet. Use 🔍 Users to start one."; return; }
   const { data: us } = await sb.from("public_profiles").select("*").in("id", [...last.keys()]);
   list.replaceChildren();
   (us || []).forEach(u => {
@@ -1158,7 +1161,7 @@ $("chatsClose").onclick = () => $("dmListBox").classList.add("hide");
 
 function openThread(u) {
   if (!me) { alert("Login first to message."); return; }
-  peer = u; $("tName").textContent = "💬 " + dispName(u); $("tList").replaceChildren(); $("tMsg").value = "";
+  peer = u; $("tName").textContent = "✉️ " + dispName(u); $("tList").replaceChildren(); $("tMsg").value = "";
   $("threadBox").classList.remove("hide");
   loadThread(true); clearInterval(threadTimer); threadTimer = setInterval(() => loadThread(false), 4000);
 }
@@ -1187,6 +1190,7 @@ $("tSend").onclick = async () => {
   $("tMsg").value = ""; loadThread(true);
 };
 $("tClose").onclick = () => { clearInterval(threadTimer); peer = null; $("threadBox").classList.add("hide"); };
+
 setMode("login");
 renderHeader(); render(); loadProducts(); refreshAuth();
 </script>
